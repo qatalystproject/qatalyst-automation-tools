@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,7 +21,6 @@ const GherkinGenerator = ({
   onNavigateToPlaywright,
   generatedGherkin: initialGherkin = ""
 }: GherkinGeneratorProps) => {
-  const [prompt, setPrompt] = useState("");
   const [url, setUrl] = useState("");
   const [scenarioDesc, setScenarioDesc] = useState("");
   const [generatedGherkin, setGeneratedGherkin] = useState(initialGherkin);
@@ -77,50 +75,6 @@ Requirements:
 
     const data = await response.json();
     return data.choices[0].message.content.trim();
-  };
-
-  const generateFromPrompt = async () => {
-    if (!prompt.trim()) return;
-    
-    setIsGenerating(true);
-    try {
-      // Mock generation untuk demo - ganti dengan real OpenAI call jika diperlukan
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const mockGherkin = `Feature: ${prompt}
-  As a user
-  I want to perform automated testing
-  So that I can ensure quality
-
-  Scenario: Basic functionality test
-    Given I am on the application page
-    When I perform the required action
-    Then I should see the expected result
-    And the system should behave correctly
-
-  Scenario: Error handling test
-    Given I am on the application page
-    When I provide invalid input
-    Then I should see an error message
-    And the system should handle the error gracefully`;
-
-      setGeneratedGherkin(mockGherkin);
-      const title = extractScenarioTitle(mockGherkin);
-      onGherkinGenerated?.(mockGherkin, title);
-      
-      toast({
-        title: "Gherkin Generated",
-        description: "Test scenarios have been successfully generated!",
-      });
-    } catch (error) {
-      toast({
-        title: "Generation Failed",
-        description: "Failed to generate Gherkin scenarios. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGenerating(false);
-    }
   };
 
   const generateFromUrl = async () => {
@@ -317,36 +271,15 @@ Feature: ${scenarioDesc}
             Gherkin Generator
           </CardTitle>
           <CardDescription className="text-slate-400">
-            Generate test scenarios from prompt, URL, or CSV data
+            Generate test scenarios from URL or CSV data
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="prompt" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-3 bg-slate-700">
-              <TabsTrigger value="prompt">From Prompt</TabsTrigger>
+          <Tabs defaultValue="url" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-2 bg-slate-700">
               <TabsTrigger value="url">From URL</TabsTrigger>
               <TabsTrigger value="csv">From CSV</TabsTrigger>
             </TabsList>
-            
-            <TabsContent value="prompt" className="space-y-4">
-              <div>
-                <Label htmlFor="prompt" className="text-white">Test Description</Label>
-                <Textarea
-                  id="prompt"
-                  placeholder="Describe what you want to test (e.g., 'Login functionality with valid and invalid credentials')"
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  className="bg-slate-700 border-slate-600 text-white mt-2 min-h-[120px]"
-                />
-              </div>
-              <Button 
-                onClick={generateFromPrompt}
-                disabled={!prompt.trim() || isGenerating}
-                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-              >
-                {isGenerating ? "Generating..." : "Generate Gherkin"}
-              </Button>
-            </TabsContent>
 
             <TabsContent value="url" className="space-y-4">
               <div>
