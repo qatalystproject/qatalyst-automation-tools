@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,20 +9,36 @@ import { useToast } from "@/hooks/use-toast";
 
 interface PlaywrightGeneratorProps {
   apiKey: string;
+  initialGherkin?: string;
+  onPlaywrightGenerated?: (code: string) => void;
+  onNavigateToExecution?: () => void;
+  onExecutionResults?: (results: any[]) => void;
 }
 
-const PlaywrightGenerator = ({ apiKey }: PlaywrightGeneratorProps) => {
-  const [gherkinInput, setGherkinInput] = useState("");
+const PlaywrightGenerator = ({ 
+  apiKey, 
+  initialGherkin = "",
+  onPlaywrightGenerated,
+  onNavigateToExecution,
+  onExecutionResults
+}: PlaywrightGeneratorProps) => {
+  const [gherkinInput, setGherkinInput] = useState(initialGherkin);
   const [playwrightCode, setPlaywrightCode] = useState("");
   const [isConverting, setIsConverting] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (initialGherkin && initialGherkin !== gherkinInput) {
+      setGherkinInput(initialGherkin);
+    }
+  }, [initialGherkin]);
 
   const convertToPlaywright = async () => {
     if (!gherkinInput.trim()) return;
     
     setIsConverting(true);
     try {
-      // Simulate AI conversion
       await new Promise(resolve => setTimeout(resolve, 2500));
       
       const mockPlaywrightCode = `import { test, expect } from '@playwright/test';
@@ -61,6 +77,8 @@ test.describe('Generated Test Suite', () => {
 });`;
 
       setPlaywrightCode(mockPlaywrightCode);
+      onPlaywrightGenerated?.(mockPlaywrightCode);
+      
       toast({
         title: "Playwright Code Generated",
         description: "Gherkin scenarios have been converted to Playwright automation scripts!",
@@ -73,6 +91,56 @@ test.describe('Generated Test Suite', () => {
       });
     } finally {
       setIsConverting(false);
+    }
+  };
+
+  const runPlaywright = async () => {
+    if (!playwrightCode) {
+      toast({
+        title: "No Code to Run",
+        description: "Please generate Playwright code first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsRunning(true);
+    try {
+      // Simulate test execution
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      const mockResults = [
+        {
+          id: "1",
+          name: "should perform automated test based on Gherkin scenario",
+          status: "passed",
+          duration: "2.1s",
+          details: "All assertions passed successfully"
+        },
+        {
+          id: "2",
+          name: "should handle error scenarios",
+          status: "passed",
+          duration: "1.8s",
+          details: "Error handling verified correctly"
+        }
+      ];
+
+      onExecutionResults?.(mockResults);
+      onNavigateToExecution?.();
+      
+      toast({
+        title: "Tests Executed",
+        description: "Playwright tests completed successfully. Check the Execute tab for results.",
+      });
+    } catch (error) {
+      toast({
+        title: "Execution Failed",
+        description: "Failed to run Playwright tests. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRunning(false);
     }
   };
 
@@ -146,13 +214,23 @@ test.describe('Generated Test Suite', () => {
             )}
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <textarea
             value={playwrightCode}
             readOnly
             placeholder="Generated Playwright automation code will appear here..."
-            className="w-full h-96 bg-slate-900 border border-slate-600 rounded p-3 text-blue-300 font-mono text-sm resize-none"
+            className="w-full h-80 bg-slate-900 border border-slate-600 rounded p-3 text-blue-300 font-mono text-sm resize-none"
           />
+          {playwrightCode && (
+            <Button 
+              onClick={runPlaywright}
+              disabled={isRunning}
+              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+            >
+              <Play className="h-4 w-4 mr-2" />
+              {isRunning ? "Running Playwright..." : "Run Playwright"}
+            </Button>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -10,7 +10,6 @@ import { Upload, Play, Settings, FileText, Download, GitBranch } from "lucide-re
 import { useToast } from "@/hooks/use-toast";
 import AuthenticationCard from "@/components/AuthenticationCard";
 import GherkinGenerator from "@/components/GherkinGenerator";
-import CsvUploader from "@/components/CsvUploader";
 import PlaywrightGenerator from "@/components/PlaywrightGenerator";
 import TestCaseManager from "@/components/TestCaseManager";
 import ExecutionEngine from "@/components/ExecutionEngine";
@@ -18,6 +17,11 @@ import ExecutionEngine from "@/components/ExecutionEngine";
 const Index = () => {
   const [openaiKey, setOpenaiKey] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [activeTab, setActiveTab] = useState("generator");
+  const [generatedGherkin, setGeneratedGherkin] = useState("");
+  const [playwrightCode, setPlaywrightCode] = useState("");
+  const [testCases, setTestCases] = useState<any[]>([]);
+  const [executionResults, setExecutionResults] = useState<any[]>([]);
   const { toast } = useToast();
 
   const handleAuthentication = (key: string) => {
@@ -27,6 +31,29 @@ const Index = () => {
       title: "Authentication Success",
       description: "OpenAI API Key has been configured successfully.",
     });
+  };
+
+  const handleGherkinGenerated = (gherkin: string, title: string) => {
+    setGeneratedGherkin(gherkin);
+    // Add to test cases automatically
+    const newTestCase = {
+      id: Date.now().toString(),
+      name: title,
+      status: "draft",
+      type: "gherkin",
+      lastModified: new Date().toISOString().split('T')[0],
+      description: `Auto-generated from ${title}`,
+      content: gherkin
+    };
+    setTestCases(prev => [...prev, newTestCase]);
+  };
+
+  const handlePlaywrightGenerated = (code: string) => {
+    setPlaywrightCode(code);
+  };
+
+  const handleExecutionResults = (results: any[]) => {
+    setExecutionResults(results);
   };
 
   return (
@@ -61,15 +88,11 @@ const Index = () => {
             <AuthenticationCard onAuthenticate={handleAuthentication} />
           </div>
         ) : (
-          <Tabs defaultValue="generator" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6 bg-slate-800 border-slate-700">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="grid w-full grid-cols-5 bg-slate-800 border-slate-700">
               <TabsTrigger value="generator" className="data-[state=active]:bg-blue-600">
                 <FileText className="h-4 w-4 mr-2" />
                 Generator
-              </TabsTrigger>
-              <TabsTrigger value="csv" className="data-[state=active]:bg-blue-600">
-                <Upload className="h-4 w-4 mr-2" />
-                CSV Import
               </TabsTrigger>
               <TabsTrigger value="playwright" className="data-[state=active]:bg-blue-600">
                 <Play className="h-4 w-4 mr-2" />
@@ -90,23 +113,30 @@ const Index = () => {
             </TabsList>
 
             <TabsContent value="generator">
-              <GherkinGenerator apiKey={openaiKey} />
-            </TabsContent>
-
-            <TabsContent value="csv">
-              <CsvUploader apiKey={openaiKey} />
+              <GherkinGenerator 
+                apiKey={openaiKey}
+                onGherkinGenerated={handleGherkinGenerated}
+                onNavigateToPlaywright={() => setActiveTab("playwright")}
+                generatedGherkin={generatedGherkin}
+              />
             </TabsContent>
 
             <TabsContent value="playwright">
-              <PlaywrightGenerator apiKey={openaiKey} />
+              <PlaywrightGenerator 
+                apiKey={openaiKey}
+                initialGherkin={generatedGherkin}
+                onPlaywrightGenerated={handlePlaywrightGenerated}
+                onNavigateToExecution={() => setActiveTab("execution")}
+                onExecutionResults={handleExecutionResults}
+              />
             </TabsContent>
 
             <TabsContent value="management">
-              <TestCaseManager />
+              <TestCaseManager testCases={testCases} onTestCasesChange={setTestCases} />
             </TabsContent>
 
             <TabsContent value="execution">
-              <ExecutionEngine />
+              <ExecutionEngine executionResults={executionResults} />
             </TabsContent>
 
             <TabsContent value="export">

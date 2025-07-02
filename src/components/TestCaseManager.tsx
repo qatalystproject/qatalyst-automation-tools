@@ -14,36 +14,15 @@ interface TestCase {
   type: "gherkin" | "playwright";
   lastModified: string;
   description: string;
+  content?: string;
 }
 
-const TestCaseManager = () => {
-  const [testCases, setTestCases] = useState<TestCase[]>([
-    {
-      id: "1",
-      name: "Login Functionality Test",
-      status: "active",
-      type: "gherkin",
-      lastModified: "2024-01-15",
-      description: "Tests for user authentication and login scenarios"
-    },
-    {
-      id: "2", 
-      name: "E-commerce Checkout Flow",
-      status: "draft",
-      type: "playwright",
-      lastModified: "2024-01-14",
-      description: "End-to-end test for shopping cart and checkout process"
-    },
-    {
-      id: "3",
-      name: "API Response Validation",
-      status: "active",
-      type: "playwright",
-      lastModified: "2024-01-13",
-      description: "Validates API responses and error handling"
-    }
-  ]);
-  
+interface TestCaseManagerProps {
+  testCases: TestCase[];
+  onTestCasesChange: (testCases: TestCase[]) => void;
+}
+
+const TestCaseManager = ({ testCases, onTestCasesChange }: TestCaseManagerProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
 
@@ -62,10 +41,22 @@ const TestCaseManager = () => {
   };
 
   const deleteTestCase = (id: string) => {
-    setTestCases(testCases.filter(tc => tc.id !== id));
+    const updatedTestCases = testCases.filter(tc => tc.id !== id);
+    onTestCasesChange(updatedTestCases);
     toast({
       title: "Test Case Deleted",
       description: "The test case has been removed successfully.",
+    });
+  };
+
+  const updateTestCaseStatus = (id: string, newStatus: "draft" | "active" | "archived") => {
+    const updatedTestCases = testCases.map(tc => 
+      tc.id === id ? { ...tc, status: newStatus, lastModified: new Date().toISOString().split('T')[0] } : tc
+    );
+    onTestCasesChange(updatedTestCases);
+    toast({
+      title: "Status Updated",
+      description: `Test case status changed to ${newStatus}.`,
     });
   };
 
@@ -108,15 +99,30 @@ const TestCaseManager = () => {
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
                       <h3 className="text-lg font-semibold text-white">{testCase.name}</h3>
-                      <Badge className={`${getStatusColor(testCase.status)} text-white`}>
-                        {testCase.status}
-                      </Badge>
-                      <Badge variant="outline" className="border-slate-600 text-slate-300">
-                        {testCase.type}
-                      </Badge>
+                      <div className="flex space-x-1">
+                        <Badge 
+                          className={`${getStatusColor(testCase.status)} text-white cursor-pointer`}
+                          onClick={() => {
+                            const nextStatus = testCase.status === "draft" ? "active" : 
+                                             testCase.status === "active" ? "archived" : "draft";
+                            updateTestCaseStatus(testCase.id, nextStatus);
+                          }}
+                        >
+                          {testCase.status}
+                        </Badge>
+                        <Badge variant="outline" className="border-slate-600 text-slate-300">
+                          {testCase.type}
+                        </Badge>
+                      </div>
                     </div>
                     <p className="text-slate-400 mb-2">{testCase.description}</p>
                     <p className="text-xs text-slate-500">Last modified: {testCase.lastModified}</p>
+                    {testCase.content && (
+                      <div className="mt-3 p-2 bg-slate-900 rounded text-xs text-green-400 font-mono max-h-20 overflow-hidden">
+                        {testCase.content.split('\n').slice(0, 3).join('\n')}
+                        {testCase.content.split('\n').length > 3 && '...'}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -148,7 +154,7 @@ const TestCaseManager = () => {
             <FileText className="h-12 w-12 text-slate-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">No Test Cases Found</h3>
             <p className="text-slate-400 mb-4">
-              {searchTerm ? "No test cases match your search criteria." : "Start by creating your first test case."}
+              {searchTerm ? "No test cases match your search criteria." : "Test cases will appear here when generated from the Generator tab."}
             </p>
             <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700">
               <Plus className="h-4 w-4 mr-2" />

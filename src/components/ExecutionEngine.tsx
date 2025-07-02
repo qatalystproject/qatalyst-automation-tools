@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,26 +15,31 @@ interface TestResult {
   details: string;
 }
 
-const ExecutionEngine = () => {
+interface ExecutionEngineProps {
+  executionResults?: TestResult[];
+}
+
+const ExecutionEngine = ({ executionResults = [] }: ExecutionEngineProps) => {
   const [isHeadless, setIsHeadless] = useState(true);
   const [isRunning, setIsRunning] = useState(false);
   const [testResults, setTestResults] = useState<TestResult[]>([
+    ...executionResults,
     {
-      id: "1",
+      id: "default-1",
       name: "Login Functionality Test",
       status: "passed",
       duration: "2.3s",
       details: "All login scenarios passed successfully"
     },
     {
-      id: "2",
+      id: "default-2",
       name: "E-commerce Checkout Flow", 
       status: "failed",
       duration: "5.7s",
       details: "Payment gateway timeout error"
     },
     {
-      id: "3",
+      id: "default-3",
       name: "API Response Validation",
       status: "pending",
       duration: "-",
@@ -45,10 +49,20 @@ const ExecutionEngine = () => {
   
   const { toast } = useToast();
 
+  // Update test results when new execution results come in
+  React.useEffect(() => {
+    if (executionResults.length > 0) {
+      setTestResults(prev => {
+        const newResults = [...executionResults];
+        const existingDefaults = prev.filter(result => result.id.startsWith('default-'));
+        return [...newResults, ...existingDefaults];
+      });
+    }
+  }, [executionResults]);
+
   const runTests = async () => {
     setIsRunning(true);
     
-    // Simulate test execution
     for (let i = 0; i < testResults.length; i++) {
       setTestResults(prev => prev.map((test, index) => 
         index === i ? { ...test, status: "running" as const } : test
@@ -56,7 +70,6 @@ const ExecutionEngine = () => {
       
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Simulate random pass/fail
       const passed = Math.random() > 0.3;
       setTestResults(prev => prev.map((test, index) => 
         index === i ? { 
