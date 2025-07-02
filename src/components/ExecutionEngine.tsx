@@ -24,7 +24,6 @@ const ExecutionEngine = ({ executionResults = [] }: ExecutionEngineProps) => {
   const [isHeadless, setIsHeadless] = useState(true);
   const [isRunning, setIsRunning] = useState(false);
   const [testResults, setTestResults] = useState<TestResult[]>([
-    ...executionResults,
     {
       id: "default-1",
       name: "Login Functionality Test",
@@ -50,13 +49,26 @@ const ExecutionEngine = ({ executionResults = [] }: ExecutionEngineProps) => {
   
   const { toast } = useToast();
 
-  // Update test results when new execution results come in
+  // Combine execution results with default test results
   React.useEffect(() => {
     if (executionResults.length > 0) {
       setTestResults(prev => {
-        const newResults = [...executionResults];
         const existingDefaults = prev.filter(result => result.id.startsWith('default-'));
-        return [...newResults, ...existingDefaults];
+        const allResults = [...executionResults, ...existingDefaults];
+        
+        // Remove duplicates based on name
+        const uniqueResults = allResults.reduce((acc, current) => {
+          const existingIndex = acc.findIndex(item => item.name === current.name);
+          if (existingIndex >= 0) {
+            // Replace existing with newer result
+            acc[existingIndex] = current;
+          } else {
+            acc.push(current);
+          }
+          return acc;
+        }, [] as TestResult[]);
+        
+        return uniqueResults;
       });
     }
   }, [executionResults]);
@@ -133,6 +145,12 @@ const ExecutionEngine = ({ executionResults = [] }: ExecutionEngineProps) => {
     }
   };
 
+  // Calculate summary statistics
+  const passedCount = testResults.filter(t => t.status === "passed").length;
+  const failedCount = testResults.filter(t => t.status === "failed").length;
+  const pendingCount = testResults.filter(t => t.status === "pending").length;
+  const runningCount = testResults.filter(t => t.status === "running").length;
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -205,24 +223,22 @@ const ExecutionEngine = ({ executionResults = [] }: ExecutionEngineProps) => {
             <CardTitle className="text-white">Test Summary</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="grid grid-cols-2 gap-2 text-center">
               <div className="p-2 bg-green-600/20 rounded">
-                <div className="text-lg font-bold text-green-400">
-                  {testResults.filter(t => t.status === "passed").length}
-                </div>
+                <div className="text-lg font-bold text-green-400">{passedCount}</div>
                 <div className="text-xs text-green-300">Passed</div>
               </div>
               <div className="p-2 bg-red-600/20 rounded">
-                <div className="text-lg font-bold text-red-400">
-                  {testResults.filter(t => t.status === "failed").length}
-                </div>
+                <div className="text-lg font-bold text-red-400">{failedCount}</div>
                 <div className="text-xs text-red-300">Failed</div>
               </div>
               <div className="p-2 bg-slate-600/20 rounded">
-                <div className="text-lg font-bold text-slate-400">
-                  {testResults.filter(t => t.status === "pending").length}
-                </div>
+                <div className="text-lg font-bold text-slate-400">{pendingCount}</div>
                 <div className="text-xs text-slate-300">Pending</div>
+              </div>
+              <div className="p-2 bg-yellow-600/20 rounded">
+                <div className="text-lg font-bold text-yellow-400">{runningCount}</div>
+                <div className="text-xs text-yellow-300">Running</div>
               </div>
             </div>
           </CardContent>
@@ -233,7 +249,7 @@ const ExecutionEngine = ({ executionResults = [] }: ExecutionEngineProps) => {
         <CardHeader>
           <CardTitle className="text-white">Test Results</CardTitle>
           <CardDescription className="text-slate-400">
-            Real-time execution results and test reports
+            Real-time execution results and test reports ({testResults.length} total tests)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -256,6 +272,14 @@ const ExecutionEngine = ({ executionResults = [] }: ExecutionEngineProps) => {
               </div>
             ))}
           </div>
+          
+          {testResults.length === 0 && (
+            <div className="text-center py-8">
+              <Clock className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-white mb-2">No Test Results</h3>
+              <p className="text-slate-400">Test results will appear here after running Playwright tests.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

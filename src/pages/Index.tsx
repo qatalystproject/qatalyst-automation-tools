@@ -33,19 +33,62 @@ const Index = () => {
     });
   };
 
+  const extractScenariosFromGherkin = (gherkin: string) => {
+    const lines = gherkin.split('\n');
+    const scenarios = [];
+    let currentScenario = null;
+    let scenarioContent = [];
+    
+    lines.forEach(line => {
+      const trimmedLine = line.trim();
+      if (trimmedLine.startsWith('Scenario:')) {
+        if (currentScenario) {
+          scenarios.push({
+            title: currentScenario,
+            content: scenarioContent.join('\n')
+          });
+        }
+        currentScenario = trimmedLine.replace('Scenario:', '').trim();
+        scenarioContent = [line];
+      } else if (currentScenario) {
+        scenarioContent.push(line);
+      }
+    });
+    
+    if (currentScenario) {
+      scenarios.push({
+        title: currentScenario,
+        content: scenarioContent.join('\n')
+      });
+    }
+    
+    return scenarios;
+  };
+
   const handleGherkinGenerated = (gherkin: string, title: string) => {
     setGeneratedGherkin(gherkin);
-    // Add to test cases automatically
-    const newTestCase = {
-      id: Date.now().toString(),
-      name: title,
-      status: "draft",
-      type: "gherkin",
+    
+    // Extract individual scenarios from Gherkin
+    const scenarios = extractScenariosFromGherkin(gherkin);
+    
+    // Create test cases for each scenario
+    const newTestCases = scenarios.map(scenario => ({
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      name: scenario.title,
+      status: "draft" as const,
+      type: "gherkin" as const,
       lastModified: new Date().toISOString().split('T')[0],
       description: `Auto-generated from ${title}`,
-      content: gherkin
-    };
-    setTestCases(prev => [...prev, newTestCase]);
+      content: scenario.content
+    }));
+    
+    // Add new test cases to existing ones (don't replace)
+    setTestCases(prev => [...prev, ...newTestCases]);
+    
+    toast({
+      title: "Test Cases Created",
+      description: `Generated ${scenarios.length} test case(s) from Gherkin scenarios.`,
+    });
   };
 
   const handlePlaywrightGenerated = (code: string) => {
@@ -53,7 +96,11 @@ const Index = () => {
   };
 
   const handleExecutionResults = (results: any[]) => {
-    setExecutionResults(results);
+    setExecutionResults(prev => [...prev, ...results]);
+  };
+
+  const handleNavigateToGenerator = () => {
+    setActiveTab("generator");
   };
 
   return (
@@ -132,7 +179,11 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="management">
-              <TestCaseManager testCases={testCases} onTestCasesChange={setTestCases} />
+              <TestCaseManager 
+                testCases={testCases} 
+                onTestCasesChange={setTestCases}
+                onNavigateToGenerator={handleNavigateToGenerator}
+              />
             </TabsContent>
 
             <TabsContent value="execution">

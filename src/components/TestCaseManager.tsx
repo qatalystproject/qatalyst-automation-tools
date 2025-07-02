@@ -4,7 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Edit, Trash2, Plus, Search } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { FileText, Edit, Trash2, Plus, Search, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface TestCase {
@@ -20,10 +23,13 @@ interface TestCase {
 interface TestCaseManagerProps {
   testCases: TestCase[];
   onTestCasesChange: (testCases: TestCase[]) => void;
+  onNavigateToGenerator: () => void;
 }
 
-const TestCaseManager = ({ testCases, onTestCasesChange }: TestCaseManagerProps) => {
+const TestCaseManager = ({ testCases, onTestCasesChange, onNavigateToGenerator }: TestCaseManagerProps) => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [editingTestCase, setEditingTestCase] = useState<TestCase | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const filteredTestCases = testCases.filter(testCase =>
@@ -60,6 +66,38 @@ const TestCaseManager = ({ testCases, onTestCasesChange }: TestCaseManagerProps)
     });
   };
 
+  const openEditDialog = (testCase: TestCase) => {
+    setEditingTestCase({ ...testCase });
+    setIsEditDialogOpen(true);
+  };
+
+  const saveTestCase = () => {
+    if (!editingTestCase) return;
+    
+    const updatedTestCases = testCases.map(tc => 
+      tc.id === editingTestCase.id ? { 
+        ...editingTestCase, 
+        lastModified: new Date().toISOString().split('T')[0] 
+      } : tc
+    );
+    onTestCasesChange(updatedTestCases);
+    setIsEditDialogOpen(false);
+    setEditingTestCase(null);
+    
+    toast({
+      title: "Test Case Updated",
+      description: "Your changes have been saved successfully.",
+    });
+  };
+
+  const handleNewTestCase = () => {
+    onNavigateToGenerator();
+    toast({
+      title: "Redirecting to Generator",
+      description: "Create a new test case using the Generator tab.",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -67,7 +105,10 @@ const TestCaseManager = ({ testCases, onTestCasesChange }: TestCaseManagerProps)
           <h2 className="text-2xl font-bold text-white">Test Case Management</h2>
           <p className="text-slate-400">Manage, edit, and organize your test scenarios</p>
         </div>
-        <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700">
+        <Button 
+          onClick={handleNewTestCase}
+          className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+        >
           <Plus className="h-4 w-4 mr-2" />
           New Test Case
         </Button>
@@ -129,6 +170,7 @@ const TestCaseManager = ({ testCases, onTestCasesChange }: TestCaseManagerProps)
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={() => openEditDialog(testCase)}
                     className="border-slate-600 text-slate-300 hover:bg-slate-700"
                   >
                     <Edit className="h-4 w-4" />
@@ -156,13 +198,67 @@ const TestCaseManager = ({ testCases, onTestCasesChange }: TestCaseManagerProps)
             <p className="text-slate-400 mb-4">
               {searchTerm ? "No test cases match your search criteria." : "Test cases will appear here when generated from the Generator tab."}
             </p>
-            <Button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700">
+            <Button 
+              onClick={handleNewTestCase}
+              className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Create Test Case
             </Button>
           </CardContent>
         </Card>
       )}
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] bg-slate-800 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-white">Edit Test Case</DialogTitle>
+            <DialogDescription className="text-slate-400">
+              Make changes to your test case. Click save when you're done.
+            </DialogDescription>
+          </DialogHeader>
+          {editingTestCase && (
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name" className="text-white">Name</Label>
+                <Input
+                  id="name"
+                  value={editingTestCase.name}
+                  onChange={(e) => setEditingTestCase({...editingTestCase, name: e.target.value})}
+                  className="bg-slate-700 border-slate-600 text-white"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="description" className="text-white">Description</Label>
+                <Input
+                  id="description"
+                  value={editingTestCase.description}
+                  onChange={(e) => setEditingTestCase({...editingTestCase, description: e.target.value})}
+                  className="bg-slate-700 border-slate-600 text-white"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="content" className="text-white">Content</Label>
+                <Textarea
+                  id="content"
+                  value={editingTestCase.content || ''}
+                  onChange={(e) => setEditingTestCase({...editingTestCase, content: e.target.value})}
+                  className="bg-slate-700 border-slate-600 text-white min-h-[200px] font-mono text-sm"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              onClick={saveTestCase}
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
