@@ -105,16 +105,6 @@ ${index + 1}. ${result.name}
    Duration: ${result.duration}
    Details: ${result.details}
 `).join('')}
-
-## Generated Gherkin Scenarios
-\`\`\`gherkin
-${gherkinContent}
-\`\`\`
-
-## Generated Playwright Code
-\`\`\`javascript
-${playwrightCode}
-\`\`\`
 `;
 
     const blob = new Blob([summary], { type: 'text/markdown' });

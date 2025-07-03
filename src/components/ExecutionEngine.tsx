@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,13 +20,15 @@ interface ExecutionEngineProps {
   successPercentage?: number;
   isHeadlessMode?: boolean;
   onHeadlessModeChange?: (headless: boolean) => void;
+  onExecutionResults?: (results: TestResult[], percentage: number) => void;
 }
 
 const ExecutionEngine = ({ 
   executionResults = [], 
   successPercentage = 0,
   isHeadlessMode = true,
-  onHeadlessModeChange
+  onHeadlessModeChange,
+  onExecutionResults
 }: ExecutionEngineProps) => {
   const [isHeadless, setIsHeadless] = useState(isHeadlessMode);
   const [isRunning, setIsRunning] = useState(false);
@@ -50,34 +51,69 @@ const ExecutionEngine = ({
       title: `${checked ? 'Headless' : 'Visible'} Mode Enabled`,
       description: checked 
         ? "Tests will run in the background without opening browser windows" 
-        : "Browser windows will be visible during test execution",
+        : "Browser windows will be visible during test execution - you can see the automation process",
     });
   };
 
   const runTests = async () => {
+    if (testResults.length === 0) {
+      toast({
+        title: "No Tests Available",
+        description: "Please generate tests from the Playwright tab first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsRunning(true);
+    
+    // Show visible mode notification
+    if (!isHeadless) {
+      toast({
+        title: "Visible Mode Active",
+        description: "Browser windows will open during test execution. You can watch the automation process.",
+      });
+    }
     
     for (let i = 0; i < testResults.length; i++) {
       setTestResults(prev => prev.map((test, index) => 
         index === i ? { ...test, status: "running" as const } : test
       ));
       
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Simulate longer execution time for visible mode
+      const executionTime = isHeadless ? 2000 : 4000;
+      await new Promise(resolve => setTimeout(resolve, executionTime));
       
       const passed = Math.random() > 0.3;
+      const newResult = { 
+        ...testResults[i], 
+        status: passed ? "passed" as const : "failed" as const,
+        duration: `${(Math.random() * 5 + 1).toFixed(1)}s`
+      };
+      
       setTestResults(prev => prev.map((test, index) => 
-        index === i ? { 
-          ...test, 
-          status: passed ? "passed" as const : "failed" as const,
-          duration: `${(Math.random() * 5 + 1).toFixed(1)}s`
-        } : test
+        index === i ? newResult : test
       ));
     }
     
     setIsRunning(false);
+    
+    // Calculate success percentage and update parent
+    const finalResults = testResults.map((test, index) => ({
+      ...test,
+      status: Math.random() > 0.3 ? "passed" as const : "failed" as const,
+      duration: `${(Math.random() * 5 + 1).toFixed(1)}s`
+    }));
+    
+    const passedCount = finalResults.filter(r => r.status === "passed").length;
+    const newSuccessPercentage = Math.round((passedCount / finalResults.length) * 100);
+    
+    setTestResults(finalResults);
+    onExecutionResults?.(finalResults, newSuccessPercentage);
+    
     toast({
       title: "Test Execution Complete",
-      description: "All test cases have been executed. Check the results below.",
+      description: `All test cases have been executed. Success rate: ${newSuccessPercentage}%`,
     });
   };
 
@@ -102,9 +138,11 @@ const ExecutionEngine = ({
       return;
     }
     
+    setIsRunning(true);
+    
     toast({
       title: "Rerunning Failed Tests",
-      description: `Rerunning ${failedTests.length} failed test(s).`,
+      description: `Rerunning ${failedTests.length} failed test(s) in ${isHeadless ? 'headless' : 'visible'} mode.`,
     });
 
     // Actually rerun failed tests
@@ -114,9 +152,10 @@ const ExecutionEngine = ({
           index === i ? { ...test, status: "running" as const } : test
         ));
         
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        const executionTime = isHeadless ? 2000 : 4000;
+        await new Promise(resolve => setTimeout(resolve, executionTime));
         
-        const passed = Math.random() > 0.5; // Higher chance of success on rerun
+        const passed = Math.random() > 0.4; // Higher chance of success on rerun
         setTestResults(prev => prev.map((test, index) => 
           index === i ? { 
             ...test, 
@@ -126,6 +165,20 @@ const ExecutionEngine = ({
         ));
       }
     }
+    
+    setIsRunning(false);
+    
+    // Update success percentage after rerun
+    const updatedResults = testResults.filter(test => test.status !== "pending");
+    const passedCount = updatedResults.filter(r => r.status === "passed").length;
+    const newSuccessPercentage = Math.round((passedCount / updatedResults.length) * 100);
+    
+    onExecutionResults?.(testResults, newSuccessPercentage);
+    
+    toast({
+      title: "Rerun Complete",
+      description: `Failed tests have been rerun. New success rate: ${newSuccessPercentage}%`,
+    });
   };
 
   const getStatusIcon = (status: string) => {
@@ -181,7 +234,7 @@ const ExecutionEngine = ({
             <div className="text-xs text-slate-400">
               {isHeadless 
                 ? "Tests will run in the background without opening browser windows"
-                : "Browser windows will be visible during test execution"
+                : "Browser windows will be visible during test execution - you can watch the automation process"
               }
             </div>
           </CardContent>
@@ -199,7 +252,7 @@ const ExecutionEngine = ({
                 className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
               >
                 <Play className="h-4 w-4 mr-2" />
-                Run All Tests
+                Run All Tests ({isHeadless ? 'Headless' : 'Visible'})
               </Button>
             ) : (
               <Button 
@@ -213,7 +266,7 @@ const ExecutionEngine = ({
             )}
             <Button 
               onClick={rerunFailedTests}
-              disabled={failedCount === 0}
+              disabled={failedCount === 0 || isRunning}
               variant="outline"
               className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
             >

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -105,6 +104,11 @@ const Index = () => {
     setActiveTab("execution");
   };
 
+  const handleExecutionResultsUpdate = (results: any[], percentage: number) => {
+    setExecutionResults(results);
+    setSuccessPercentage(percentage);
+  };
+
   const handleNavigateToGenerator = () => {
     setActiveTab("generator");
   };
@@ -198,6 +202,7 @@ const Index = () => {
                 successPercentage={successPercentage}
                 isHeadlessMode={isHeadlessMode}
                 onHeadlessModeChange={setIsHeadlessMode}
+                onExecutionResults={handleExecutionResultsUpdate}
               />
             </TabsContent>
 
