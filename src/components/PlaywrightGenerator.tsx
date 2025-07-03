@@ -12,6 +12,8 @@ interface PlaywrightGeneratorProps {
   onPlaywrightGenerated?: (code: string) => void;
   onNavigateToExecution?: () => void;
   onExecutionResults?: (results: any[], successPercentage: number) => void;
+  playwrightCode?: string;
+  onPlaywrightCodeChange?: (code: string) => void;
 }
 
 const PlaywrightGenerator = ({ 
@@ -19,10 +21,12 @@ const PlaywrightGenerator = ({
   initialGherkin = "",
   onPlaywrightGenerated,
   onNavigateToExecution,
-  onExecutionResults
+  onExecutionResults,
+  playwrightCode: initialPlaywrightCode = "",
+  onPlaywrightCodeChange
 }: PlaywrightGeneratorProps) => {
   const [gherkinInput, setGherkinInput] = useState(initialGherkin);
-  const [playwrightCode, setPlaywrightCode] = useState("");
+  const [playwrightCode, setPlaywrightCode] = useState(initialPlaywrightCode);
   const [isConverting, setIsConverting] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const { toast } = useToast();
@@ -32,6 +36,12 @@ const PlaywrightGenerator = ({
       setGherkinInput(initialGherkin);
     }
   }, [initialGherkin]);
+
+  useEffect(() => {
+    if (initialPlaywrightCode !== playwrightCode) {
+      setPlaywrightCode(initialPlaywrightCode);
+    }
+  }, [initialPlaywrightCode]);
 
   const parseScenarios = (featureText: string) => {
     const lines = featureText.split('\n');
@@ -145,6 +155,7 @@ Requirements:
       const finalCode = allTests.trim();
       setPlaywrightCode(finalCode);
       onPlaywrightGenerated?.(finalCode);
+      onPlaywrightCodeChange?.(finalCode);
       
       toast({
         title: "Playwright Code Generated",
@@ -227,11 +238,11 @@ Requirements:
 
   const clearGherkinInput = () => {
     setGherkinInput("");
-    setPlaywrightCode("");
   };
 
   const clearPlaywrightCode = () => {
     setPlaywrightCode("");
+    onPlaywrightCodeChange?.("");
   };
 
   return (

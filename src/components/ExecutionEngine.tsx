@@ -2,10 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Play, Square, RotateCcw, Eye, EyeOff, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Play, Square, RotateCcw, CheckCircle, XCircle, Clock, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface TestResult {
@@ -31,16 +29,10 @@ const ExecutionEngine = ({
   onHeadlessModeChange,
   onExecutionResults
 }: ExecutionEngineProps) => {
-  const [isHeadless, setIsHeadless] = useState(isHeadlessMode);
   const [isRunning, setIsRunning] = useState(false);
   const [testResults, setTestResults] = useState<TestResult[]>(executionResults);
   
   const { toast } = useToast();
-
-  // Update local state when props change
-  useEffect(() => {
-    setIsHeadless(isHeadlessMode);
-  }, [isHeadlessMode]);
 
   useEffect(() => {
     if (executionResults.length > 0) {
@@ -48,37 +40,22 @@ const ExecutionEngine = ({
     }
   }, [executionResults]);
 
-  const handleHeadlessChange = (checked: boolean) => {
-    setIsHeadless(checked);
-    onHeadlessModeChange?.(checked);
-    
-    toast({
-      title: `${checked ? 'Headless' : 'Visible'} Mode Enabled`,
-      description: checked 
-        ? "Tests will run in the background without opening browser windows" 
-        : "Browser windows will be visible during test execution - you can watch the automation process",
-    });
-  };
-
   const simulateVisibleExecution = async (testName: string) => {
-    // Simulate visible mode with detailed logging
-    if (!isHeadless) {
-      console.log(`🌐 Opening browser window for: ${testName}`);
-      toast({
-        title: "Browser Opening",
-        description: `Opening browser for test: ${testName}`,
-      });
-      
-      // Simulate browser actions with delays
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log(`🔗 Navigating to test URL...`);
-      
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log(`⌨️ Interacting with page elements...`);
-      
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      console.log(`✅ Test execution completed for: ${testName}`);
-    }
+    console.log(`🌐 Opening browser window for: ${testName}`);
+    toast({
+      title: "Browser Opening",
+      description: `Opening browser for test: ${testName}`,
+    });
+    
+    // Simulate browser actions with delays
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    console.log(`🔗 Navigating to test URL...`);
+    
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    console.log(`⌨️ Interacting with page elements...`);
+    
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    console.log(`✅ Test execution completed for: ${testName}`);
   };
 
   const runTests = async () => {
@@ -93,12 +70,9 @@ const ExecutionEngine = ({
     
     setIsRunning(true);
     
-    // Show mode notification
     toast({
-      title: `${isHeadless ? 'Headless' : 'Visible'} Mode Active`,
-      description: isHeadless 
-        ? "Tests will run in the background" 
-        : "Browser windows will open - you can watch the automation process",
+      title: "Headless Mode Active",
+      description: "Tests are running in the background without visible browser windows",
     });
     
     const updatedResults = [...testResults];
@@ -108,14 +82,8 @@ const ExecutionEngine = ({
       updatedResults[i] = { ...updatedResults[i], status: "running" as const };
       setTestResults([...updatedResults]);
       
-      // Simulate visible mode execution
-      if (!isHeadless) {
-        await simulateVisibleExecution(updatedResults[i].name);
-      }
-      
-      // Simulate test execution time
-      const executionTime = isHeadless ? 2000 : 1000; // Visible mode is faster since we already showed the process
-      await new Promise(resolve => setTimeout(resolve, executionTime));
+      // Simulate test execution time in headless mode
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Determine test result
       const passed = Math.random() > 0.3;
@@ -173,7 +141,7 @@ const ExecutionEngine = ({
     
     toast({
       title: "Rerunning Failed Tests",
-      description: `Rerunning ${failedIndices.length} failed test(s) in ${isHeadless ? 'headless' : 'visible'} mode.`,
+      description: `Rerunning ${failedIndices.length} failed test(s) in headless mode.`,
     });
 
     const updatedResults = [...testResults];
@@ -183,13 +151,7 @@ const ExecutionEngine = ({
       updatedResults[index] = { ...updatedResults[index], status: "running" as const };
       setTestResults([...updatedResults]);
       
-      // Simulate visible mode execution for failed test rerun
-      if (!isHeadless) {
-        await simulateVisibleExecution(updatedResults[index].name);
-      }
-      
-      const executionTime = isHeadless ? 2000 : 1000;
-      await new Promise(resolve => setTimeout(resolve, executionTime));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Higher chance of success on rerun
       const passed = Math.random() > 0.4;
@@ -249,30 +211,17 @@ const ExecutionEngine = ({
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader>
             <CardTitle className="text-white flex items-center">
-              <Play className="h-5 w-5 mr-2 text-blue-400" />
-              Execution Settings
+              <Info className="h-5 w-5 mr-2 text-blue-400" />
+              Execution Mode
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                {isHeadless ? <EyeOff className="h-4 w-4 text-slate-400" /> : <Eye className="h-4 w-4 text-slate-400" />}
-                <Label htmlFor="headless" className="text-white">
-                  {isHeadless ? "Headless Mode" : "Visible Mode"}
-                </Label>
-              </div>
-              <Switch
-                id="headless"
-                checked={isHeadless}
-                onCheckedChange={handleHeadlessChange}
-                disabled={isRunning}
-              />
+          <CardContent>
+            <div className="flex items-center space-x-2 p-3 bg-slate-700 rounded-lg">
+              <div className="h-2 w-2 rounded-full bg-blue-400"></div>
+              <span className="text-white font-medium">Headless Mode</span>
             </div>
-            <div className="text-xs text-slate-400">
-              {isHeadless 
-                ? "Tests will run in the background without opening browser windows"
-                : "Browser windows will be visible during test execution - you can watch the automation process"
-              }
+            <div className="text-xs text-slate-400 mt-2">
+              Tests run in the background without opening browser windows for faster execution
             </div>
           </CardContent>
         </Card>
@@ -289,7 +238,7 @@ const ExecutionEngine = ({
                 className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
               >
                 <Play className="h-4 w-4 mr-2" />
-                Run All Tests ({isHeadless ? 'Headless' : 'Visible'})
+                Run All Tests (Headless)
               </Button>
             ) : (
               <Button 

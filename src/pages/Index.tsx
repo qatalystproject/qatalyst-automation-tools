@@ -175,6 +175,7 @@ const Index = () => {
                 onGherkinGenerated={handleGherkinGenerated}
                 onNavigateToPlaywright={() => setActiveTab("playwright")}
                 generatedGherkin={generatedGherkin}
+                onGherkinChange={setGeneratedGherkin}
               />
             </TabsContent>
 
@@ -185,6 +186,8 @@ const Index = () => {
                 onPlaywrightGenerated={handlePlaywrightGenerated}
                 onNavigateToExecution={() => setActiveTab("execution")}
                 onExecutionResults={handleExecutionResults}
+                playwrightCode={playwrightCode}
+                onPlaywrightCodeChange={setPlaywrightCode}
               />
             </TabsContent>
 
