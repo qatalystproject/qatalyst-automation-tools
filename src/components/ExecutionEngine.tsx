@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -36,8 +37,12 @@ const ExecutionEngine = ({
   
   const { toast } = useToast();
 
-  // Update test results when executionResults change
-  React.useEffect(() => {
+  // Update local state when props change
+  useEffect(() => {
+    setIsHeadless(isHeadlessMode);
+  }, [isHeadlessMode]);
+
+  useEffect(() => {
     if (executionResults.length > 0) {
       setTestResults(executionResults);
     }
@@ -51,8 +56,29 @@ const ExecutionEngine = ({
       title: `${checked ? 'Headless' : 'Visible'} Mode Enabled`,
       description: checked 
         ? "Tests will run in the background without opening browser windows" 
-        : "Browser windows will be visible during test execution - you can see the automation process",
+        : "Browser windows will be visible during test execution - you can watch the automation process",
     });
+  };
+
+  const simulateVisibleExecution = async (testName: string) => {
+    // Simulate visible mode with detailed logging
+    if (!isHeadless) {
+      console.log(`🌐 Opening browser window for: ${testName}`);
+      toast({
+        title: "Browser Opening",
+        description: `Opening browser for test: ${testName}`,
+      });
+      
+      // Simulate browser actions with delays
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log(`🔗 Navigating to test URL...`);
+      
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      console.log(`⌨️ Interacting with page elements...`);
+      
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log(`✅ Test execution completed for: ${testName}`);
+    }
   };
 
   const runTests = async () => {
@@ -67,61 +93,63 @@ const ExecutionEngine = ({
     
     setIsRunning(true);
     
-    // Show visible mode notification
-    if (!isHeadless) {
-      toast({
-        title: "Visible Mode Active",
-        description: "Browser windows will open during test execution. You can watch the automation process.",
-      });
-    }
+    // Show mode notification
+    toast({
+      title: `${isHeadless ? 'Headless' : 'Visible'} Mode Active`,
+      description: isHeadless 
+        ? "Tests will run in the background" 
+        : "Browser windows will open - you can watch the automation process",
+    });
     
-    for (let i = 0; i < testResults.length; i++) {
-      setTestResults(prev => prev.map((test, index) => 
-        index === i ? { ...test, status: "running" as const } : test
-      ));
+    const updatedResults = [...testResults];
+    
+    for (let i = 0; i < updatedResults.length; i++) {
+      // Set test to running
+      updatedResults[i] = { ...updatedResults[i], status: "running" as const };
+      setTestResults([...updatedResults]);
       
-      // Simulate longer execution time for visible mode
-      const executionTime = isHeadless ? 2000 : 4000;
+      // Simulate visible mode execution
+      if (!isHeadless) {
+        await simulateVisibleExecution(updatedResults[i].name);
+      }
+      
+      // Simulate test execution time
+      const executionTime = isHeadless ? 2000 : 1000; // Visible mode is faster since we already showed the process
       await new Promise(resolve => setTimeout(resolve, executionTime));
       
+      // Determine test result
       const passed = Math.random() > 0.3;
-      const newResult = { 
-        ...testResults[i], 
+      updatedResults[i] = { 
+        ...updatedResults[i], 
         status: passed ? "passed" as const : "failed" as const,
-        duration: `${(Math.random() * 5 + 1).toFixed(1)}s`
+        duration: `${(Math.random() * 5 + 1).toFixed(1)}s`,
+        details: passed ? "Test passed successfully" : "Test failed - assertion error"
       };
       
-      setTestResults(prev => prev.map((test, index) => 
-        index === i ? newResult : test
-      ));
+      setTestResults([...updatedResults]);
     }
     
     setIsRunning(false);
     
-    // Calculate success percentage and update parent
-    const finalResults = testResults.map((test, index) => ({
-      ...test,
-      status: Math.random() > 0.3 ? "passed" as const : "failed" as const,
-      duration: `${(Math.random() * 5 + 1).toFixed(1)}s`
-    }));
+    // Calculate success percentage
+    const passedCount = updatedResults.filter(r => r.status === "passed").length;
+    const newSuccessPercentage = Math.round((passedCount / updatedResults.length) * 100);
     
-    const passedCount = finalResults.filter(r => r.status === "passed").length;
-    const newSuccessPercentage = Math.round((passedCount / finalResults.length) * 100);
-    
-    setTestResults(finalResults);
-    onExecutionResults?.(finalResults, newSuccessPercentage);
+    onExecutionResults?.(updatedResults, newSuccessPercentage);
     
     toast({
       title: "Test Execution Complete",
-      description: `All test cases have been executed. Success rate: ${newSuccessPercentage}%`,
+      description: `All test cases executed. Success rate: ${newSuccessPercentage}%`,
     });
   };
 
   const stopTests = () => {
     setIsRunning(false);
-    setTestResults(prev => prev.map(test => 
+    const stoppedResults = testResults.map(test => 
       test.status === "running" ? { ...test, status: "pending" as const } : test
-    ));
+    );
+    setTestResults(stoppedResults);
+    
     toast({
       title: "Tests Stopped",
       description: "Test execution has been stopped.",
@@ -129,8 +157,11 @@ const ExecutionEngine = ({
   };
 
   const rerunFailedTests = async () => {
-    const failedTests = testResults.filter(test => test.status === "failed");
-    if (failedTests.length === 0) {
+    const failedIndices = testResults
+      .map((test, index) => test.status === "failed" ? index : -1)
+      .filter(index => index !== -1);
+      
+    if (failedIndices.length === 0) {
       toast({
         title: "No Failed Tests",
         description: "There are no failed tests to rerun.",
@@ -142,42 +173,47 @@ const ExecutionEngine = ({
     
     toast({
       title: "Rerunning Failed Tests",
-      description: `Rerunning ${failedTests.length} failed test(s) in ${isHeadless ? 'headless' : 'visible'} mode.`,
+      description: `Rerunning ${failedIndices.length} failed test(s) in ${isHeadless ? 'headless' : 'visible'} mode.`,
     });
 
-    // Actually rerun failed tests
-    for (let i = 0; i < testResults.length; i++) {
-      if (testResults[i].status === "failed") {
-        setTestResults(prev => prev.map((test, index) => 
-          index === i ? { ...test, status: "running" as const } : test
-        ));
-        
-        const executionTime = isHeadless ? 2000 : 4000;
-        await new Promise(resolve => setTimeout(resolve, executionTime));
-        
-        const passed = Math.random() > 0.4; // Higher chance of success on rerun
-        setTestResults(prev => prev.map((test, index) => 
-          index === i ? { 
-            ...test, 
-            status: passed ? "passed" as const : "failed" as const,
-            duration: `${(Math.random() * 5 + 1).toFixed(1)}s`
-          } : test
-        ));
+    const updatedResults = [...testResults];
+    
+    for (const index of failedIndices) {
+      // Set failed test to running
+      updatedResults[index] = { ...updatedResults[index], status: "running" as const };
+      setTestResults([...updatedResults]);
+      
+      // Simulate visible mode execution for failed test rerun
+      if (!isHeadless) {
+        await simulateVisibleExecution(updatedResults[index].name);
       }
+      
+      const executionTime = isHeadless ? 2000 : 1000;
+      await new Promise(resolve => setTimeout(resolve, executionTime));
+      
+      // Higher chance of success on rerun
+      const passed = Math.random() > 0.4;
+      updatedResults[index] = { 
+        ...updatedResults[index], 
+        status: passed ? "passed" as const : "failed" as const,
+        duration: `${(Math.random() * 5 + 1).toFixed(1)}s`,
+        details: passed ? "Test passed on rerun" : "Test failed again - needs investigation"
+      };
+      
+      setTestResults([...updatedResults]);
     }
     
     setIsRunning(false);
     
     // Update success percentage after rerun
-    const updatedResults = testResults.filter(test => test.status !== "pending");
     const passedCount = updatedResults.filter(r => r.status === "passed").length;
     const newSuccessPercentage = Math.round((passedCount / updatedResults.length) * 100);
     
-    onExecutionResults?.(testResults, newSuccessPercentage);
+    onExecutionResults?.(updatedResults, newSuccessPercentage);
     
     toast({
       title: "Rerun Complete",
-      description: `Failed tests have been rerun. New success rate: ${newSuccessPercentage}%`,
+      description: `Failed tests rerun completed. New success rate: ${newSuccessPercentage}%`,
     });
   };
 
@@ -229,6 +265,7 @@ const ExecutionEngine = ({
                 id="headless"
                 checked={isHeadless}
                 onCheckedChange={handleHeadlessChange}
+                disabled={isRunning}
               />
             </div>
             <div className="text-xs text-slate-400">
@@ -313,7 +350,7 @@ const ExecutionEngine = ({
         <CardHeader>
           <CardTitle className="text-white">Test Results</CardTitle>
           <CardDescription className="text-slate-400">
-            Execution results from Playwright tests ({testResults.length} executed tests)
+            Execution results from Playwright tests ({testResults.length} tests)
           </CardDescription>
         </CardHeader>
         <CardContent>

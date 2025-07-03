@@ -198,37 +198,6 @@ ${index + 1}. ${result.name}
           </div>
         </CardContent>
       </Card>
-
-      <Card className="bg-slate-800 border-slate-700 md:col-span-2">
-        <CardHeader>
-          <CardTitle className="text-white">Export Summary</CardTitle>
-          <CardDescription className="text-slate-400">
-            Current project statistics
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-            <div className="p-3 bg-slate-700 rounded-lg">
-              <div className="text-2xl font-bold text-blue-400">{testCases.length}</div>
-              <div className="text-sm text-slate-300">Test Cases</div>
-            </div>
-            <div className="p-3 bg-slate-700 rounded-lg">
-              <div className="text-2xl font-bold text-green-400">{executionResults.length}</div>
-              <div className="text-sm text-slate-300">Executed</div>
-            </div>
-            <div className="p-3 bg-slate-700 rounded-lg">
-              <div className="text-2xl font-bold text-purple-400">{successPercentage}%</div>
-              <div className="text-sm text-slate-300">Success Rate</div>
-            </div>
-            <div className="p-3 bg-slate-700 rounded-lg">
-              <div className="text-2xl font-bold text-cyan-400">
-                {gherkinContent ? '✓' : '○'}
-              </div>
-              <div className="text-sm text-slate-300">Gherkin Ready</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
