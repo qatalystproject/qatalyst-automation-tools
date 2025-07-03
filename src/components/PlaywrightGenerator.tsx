@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Code, Play, Copy } from "lucide-react";
+import { Code, Play, Copy, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface PlaywrightGeneratorProps {
@@ -12,7 +11,7 @@ interface PlaywrightGeneratorProps {
   initialGherkin?: string;
   onPlaywrightGenerated?: (code: string) => void;
   onNavigateToExecution?: () => void;
-  onExecutionResults?: (results: any[]) => void;
+  onExecutionResults?: (results: any[], successPercentage: number) => void;
 }
 
 const PlaywrightGenerator = ({ 
@@ -194,15 +193,18 @@ Requirements:
         };
       });
 
-      onExecutionResults?.(mockResults);
+      // Calculate success percentage
+      const passedCount = mockResults.filter(r => r.status === "passed").length;
+      const successPercentage = Math.round((passedCount / mockResults.length) * 100);
+
+      onExecutionResults?.(mockResults, successPercentage);
       onNavigateToExecution?.();
       
-      const passedCount = mockResults.filter(r => r.status === "passed").length;
       const failedCount = mockResults.filter(r => r.status === "failed").length;
       
       toast({
         title: "Tests Executed",
-        description: `Playwright tests completed. ${passedCount} passed, ${failedCount} failed. Check the Execute tab for details.`,
+        description: `Playwright tests completed. ${passedCount} passed, ${failedCount} failed (${successPercentage}% success). Navigating to Execute tab.`,
       });
     } catch (error) {
       toast({
@@ -223,17 +225,40 @@ Requirements:
     });
   };
 
+  const clearGherkinInput = () => {
+    setGherkinInput("");
+    setPlaywrightCode("");
+  };
+
+  const clearPlaywrightCode = () => {
+    setPlaywrightCode("");
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card className="bg-slate-800 border-slate-700">
         <CardHeader>
-          <CardTitle className="text-white flex items-center">
-            <Code className="h-5 w-5 mr-2 text-blue-400" />
-            Gherkin Input
-          </CardTitle>
-          <CardDescription className="text-slate-400">
-            Paste your Gherkin scenarios to convert to Playwright automation
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-white flex items-center">
+                <Code className="h-5 w-5 mr-2 text-blue-400" />
+                Gherkin Input
+              </CardTitle>
+              <CardDescription className="text-slate-400">
+                Paste your Gherkin scenarios to convert to Playwright automation
+              </CardDescription>
+            </div>
+            {gherkinInput && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearGherkinInput}
+                className="border-slate-600 text-slate-300 hover:bg-slate-700"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -273,17 +298,28 @@ Feature: Login functionality
                 Generated automation script ready for execution
               </CardDescription>
             </div>
-            {playwrightCode && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={copyCode}
-                className="border-slate-600 text-slate-300 hover:bg-slate-700"
-              >
-                <Copy className="h-4 w-4 mr-2" />
-                Copy
-              </Button>
-            )}
+            <div className="flex space-x-2">
+              {playwrightCode && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={copyCode}
+                    className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearPlaywrightCode}
+                    className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">

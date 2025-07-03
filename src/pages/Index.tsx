@@ -13,6 +13,7 @@ import GherkinGenerator from "@/components/GherkinGenerator";
 import PlaywrightGenerator from "@/components/PlaywrightGenerator";
 import TestCaseManager from "@/components/TestCaseManager";
 import ExecutionEngine from "@/components/ExecutionEngine";
+import ExportManager from "@/components/ExportManager";
 
 const Index = () => {
   const [openaiKey, setOpenaiKey] = useState("");
@@ -22,6 +23,8 @@ const Index = () => {
   const [playwrightCode, setPlaywrightCode] = useState("");
   const [testCases, setTestCases] = useState<any[]>([]);
   const [executionResults, setExecutionResults] = useState<any[]>([]);
+  const [successPercentage, setSuccessPercentage] = useState(0);
+  const [isHeadlessMode, setIsHeadlessMode] = useState(true);
   const { toast } = useToast();
 
   const handleAuthentication = (key: string) => {
@@ -95,8 +98,11 @@ const Index = () => {
     setPlaywrightCode(code);
   };
 
-  const handleExecutionResults = (results: any[]) => {
-    setExecutionResults(prev => [...prev, ...results]);
+  const handleExecutionResults = (results: any[], percentage: number) => {
+    setExecutionResults(results);
+    setSuccessPercentage(percentage);
+    // Auto-navigate to Execute tab
+    setActiveTab("execution");
   };
 
   const handleNavigateToGenerator = () => {
@@ -187,18 +193,22 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="execution">
-              <ExecutionEngine executionResults={executionResults} />
+              <ExecutionEngine 
+                executionResults={executionResults}
+                successPercentage={successPercentage}
+                isHeadlessMode={isHeadlessMode}
+                onHeadlessModeChange={setIsHeadlessMode}
+              />
             </TabsContent>
 
             <TabsContent value="export">
-              <Card className="p-6 bg-slate-800 border-slate-700">
-                <h3 className="text-xl font-semibold text-white mb-4">Export to GitHub</h3>
-                <p className="text-slate-400 mb-4">Export your test cases and automation scripts to a GitHub repository.</p>
-                <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
-                  <GitBranch className="h-4 w-4 mr-2" />
-                  Connect GitHub Repository
-                </Button>
-              </Card>
+              <ExportManager 
+                gherkinContent={generatedGherkin}
+                playwrightCode={playwrightCode}
+                testCases={testCases}
+                executionResults={executionResults}
+                successPercentage={successPercentage}
+              />
             </TabsContent>
           </Tabs>
         )}

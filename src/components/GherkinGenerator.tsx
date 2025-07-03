@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Wand2, Copy, Download, Upload, FileText, X, Play, Link } from "lucide-react";
+import { Wand2, Copy, Download, Upload, FileText, X, Play, Link, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface GherkinGeneratorProps {
@@ -154,25 +155,62 @@ Feature: ${scenarioDesc}
       const headers = csvData[0];
       const dataRows = csvData.slice(1);
       
-      let allScenarios = '';
-      let featureTitle = 'CSV Data Driven Tests';
+      // Expected headers: No, Test Case, Test Case Description, Preconditions, Test Steps, Expected Result
+      const testCaseIndex = headers.findIndex(h => h.toLowerCase().includes('test case') && !h.toLowerCase().includes('description'));
+      const descriptionIndex = headers.findIndex(h => h.toLowerCase().includes('description'));
+      const preconditionsIndex = headers.findIndex(h => h.toLowerCase().includes('preconditions'));
+      const stepsIndex = headers.findIndex(h => h.toLowerCase().includes('steps'));
+      const expectedIndex = headers.findIndex(h => h.toLowerCase().includes('expected'));
       
+      let allScenarios = '';
+      let featureTitle = 'CSV Generated Test Cases';
+      
+      if (dataRows.length > 0) {
+        const firstTestCase = dataRows[0][testCaseIndex] || 'Test Cases';
+        featureTitle = `Feature: ${firstTestCase} and Related Tests`;
+        allScenarios += `${featureTitle}\n  As a user\n  I want to validate various functionality\n  So that the system works as expected\n\n`;
+      }
+
       // Generate scenarios for each row of CSV data
       dataRows.forEach((row, index) => {
         if (row.some(cell => cell.trim())) { // Skip empty rows
-          const scenarioTitle = row[0] || `Test Case ${index + 1}`;
-          const testData = headers.map((header, i) => `${header}: ${row[i] || 'N/A'}`).join(', ');
+          const testCase = row[testCaseIndex] || `Test Case ${index + 1}`;
+          const description = row[descriptionIndex] || 'Test functionality';
+          const preconditions = row[preconditionsIndex] || '';
+          const testSteps = row[stepsIndex] || 'Execute test';
+          const expectedResult = row[expectedIndex] || 'System should work correctly';
           
-          if (index === 0) {
-            featureTitle = `CSV Generated Tests - ${scenarioTitle}`;
-            allScenarios += `Feature: ${featureTitle}\n  As a user\n  I want to test with CSV data\n  So that I can validate multiple scenarios\n\n`;
+          allScenarios += `  Scenario: ${testCase}\n`;
+          
+          // Handle preconditions (could include login info and URL)
+          if (preconditions.trim()) {
+            const preconditionLines = preconditions.split(',').map(p => p.trim());
+            preconditionLines.forEach(precondition => {
+              if (precondition.toLowerCase().includes('login') || precondition.toLowerCase().includes('auth')) {
+                allScenarios += `    Given I am logged in as authorized user\n`;
+              } else if (precondition.toLowerCase().includes('url') || precondition.toLowerCase().includes('page')) {
+                allScenarios += `    Given I am on the target page\n`;
+              } else {
+                allScenarios += `    Given ${precondition}\n`;
+              }
+            });
+          } else {
+            allScenarios += `    Given the system is ready\n`;
           }
           
-          allScenarios += `  Scenario: ${scenarioTitle}\n`;
-          allScenarios += `    Given I have test data: ${testData}\n`;
-          allScenarios += `    When I execute the test with this data\n`;
-          allScenarios += `    Then the system should process it correctly\n`;
-          allScenarios += `    And I should see the expected results\n\n`;
+          // Handle test steps
+          const stepLines = testSteps.split(',').map(s => s.trim());
+          stepLines.forEach(step => {
+            allScenarios += `    When ${step}\n`;
+          });
+          
+          // Handle expected results
+          const resultLines = expectedResult.split(',').map(r => r.trim());
+          resultLines.forEach(result => {
+            allScenarios += `    Then ${result}\n`;
+          });
+          
+          allScenarios += '\n';
         }
       });
 
@@ -192,6 +230,28 @@ Feature: ${scenarioDesc}
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const downloadCsvTemplate = () => {
+    const template = `No,Test Case,Test Case Description,Preconditions,Test Steps,Expected Result
+1,User Login,Successful user login functionality,"URL: https://example.com/login, Login credentials available","Enter username and password, Click login button","User should be redirected to dashboard, Welcome message should be displayed"
+2,Form Validation,Validate form input validation,"URL: https://example.com/form, Form is accessible","Leave required field empty, Click submit button","Error message should be displayed, Form should not be submitted"
+3,Navigation Test,Test main navigation functionality,"URL: https://example.com, User is on homepage","Click on navigation menu items, Verify page loads","Each page should load correctly, URL should change appropriately"`;
+
+    const blob = new Blob([template], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'test-case-template.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Template Downloaded",
+      description: "CSV template has been downloaded. Follow the format for best results.",
+    });
   };
 
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -262,6 +322,20 @@ Feature: ${scenarioDesc}
     }
   };
 
+  const clearUrlForm = () => {
+    setUrl("");
+    setScenarioDesc("");
+  };
+
+  const clearCsvData = () => {
+    setCsvFile(null);
+    setCsvData([]);
+  };
+
+  const clearGeneratedGherkin = () => {
+    setGeneratedGherkin("");
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card className="bg-slate-800 border-slate-700">
@@ -282,6 +356,19 @@ Feature: ${scenarioDesc}
             </TabsList>
 
             <TabsContent value="url" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-white text-sm font-medium">URL Input Form</Label>
+                {(url || scenarioDesc) && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearUrlForm}
+                    className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
               <div>
                 <Label htmlFor="url" className="text-white">Website URL</Label>
                 <Input
@@ -314,6 +401,28 @@ Feature: ${scenarioDesc}
             </TabsContent>
             
             <TabsContent value="csv" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-white text-sm font-medium">CSV Upload</Label>
+                {csvFile && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearCsvData}
+                    className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              <Button
+                onClick={downloadCsvTemplate}
+                variant="outline"
+                className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download CSV Template
+              </Button>
+              
               <div className="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center">
                 {!csvFile ? (
                   <div>
@@ -416,6 +525,14 @@ Feature: ${scenarioDesc}
                   className="border-slate-600 text-slate-300 hover:bg-slate-700"
                 >
                   <Download className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearGeneratedGherkin}
+                  className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                >
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             )}
