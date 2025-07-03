@@ -73,11 +73,11 @@ const Index = () => {
     // Extract individual scenarios from Gherkin
     const scenarios = extractScenariosFromGherkin(gherkin);
     
-    // Create test cases for each scenario
+    // Create test cases for each scenario with updated status type
     const newTestCases = scenarios.map(scenario => ({
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       name: scenario.title,
-      status: "draft" as const,
+      status: "active" as const,
       type: "gherkin" as const,
       lastModified: new Date().toISOString().split('T')[0],
       description: `Auto-generated from ${title}`,

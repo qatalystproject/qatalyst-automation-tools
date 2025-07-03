@@ -7,13 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { FileText, Edit, Trash2, Plus, Search, Save } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { FileText, Edit, Trash2, Plus, Search, Save, Check, Archive } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface TestCase {
   id: string;
   name: string;
-  status: "draft" | "active" | "archived";
+  status: "active" | "archived";
   type: "gherkin" | "playwright";
   lastModified: string;
   description: string;
@@ -30,6 +31,7 @@ const TestCaseManager = ({ testCases, onTestCasesChange, onNavigateToGenerator }
   const [searchTerm, setSearchTerm] = useState("");
   const [editingTestCase, setEditingTestCase] = useState<TestCase | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedTestCases, setSelectedTestCases] = useState<string[]>([]);
   const { toast } = useToast();
 
   const filteredTestCases = testCases.filter(testCase =>
@@ -37,10 +39,12 @@ const TestCaseManager = ({ testCases, onTestCasesChange, onNavigateToGenerator }
     testCase.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const activeTestCases = testCases.filter(tc => tc.status === "active");
+  const archivedTestCases = testCases.filter(tc => tc.status === "archived");
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active": return "bg-green-600";
-      case "draft": return "bg-yellow-600";
       case "archived": return "bg-gray-600";
       default: return "bg-gray-600";
     }
@@ -55,7 +59,7 @@ const TestCaseManager = ({ testCases, onTestCasesChange, onNavigateToGenerator }
     });
   };
 
-  const updateTestCaseStatus = (id: string, newStatus: "draft" | "active" | "archived") => {
+  const updateTestCaseStatus = (id: string, newStatus: "active" | "archived") => {
     const updatedTestCases = testCases.map(tc => 
       tc.id === id ? { ...tc, status: newStatus, lastModified: new Date().toISOString().split('T')[0] } : tc
     );
@@ -63,6 +67,36 @@ const TestCaseManager = ({ testCases, onTestCasesChange, onNavigateToGenerator }
     toast({
       title: "Status Updated",
       description: `Test case status changed to ${newStatus}.`,
+    });
+  };
+
+  const handleSelectTestCase = (id: string, checked: boolean) => {
+    if (checked) {
+      setSelectedTestCases(prev => [...prev, id]);
+    } else {
+      setSelectedTestCases(prev => prev.filter(tcId => tcId !== id));
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedTestCases(filteredTestCases.map(tc => tc.id));
+    } else {
+      setSelectedTestCases([]);
+    }
+  };
+
+  const handleBulkStatusUpdate = (status: "active" | "archived") => {
+    const updatedTestCases = testCases.map(tc => 
+      selectedTestCases.includes(tc.id) 
+        ? { ...tc, status, lastModified: new Date().toISOString().split('T')[0] }
+        : tc
+    );
+    onTestCasesChange(updatedTestCases);
+    setSelectedTestCases([]);
+    toast({
+      title: "Bulk Update Complete",
+      description: `${selectedTestCases.length} test case(s) updated to ${status}.`,
     });
   };
 
@@ -103,7 +137,9 @@ const TestCaseManager = ({ testCases, onTestCasesChange, onNavigateToGenerator }
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white">Test Case Management</h2>
-          <p className="text-slate-400">Manage, edit, and organize your test scenarios</p>
+          <p className="text-slate-400">
+            Manage, edit, and organize your test scenarios ({activeTestCases.length} active, {archivedTestCases.length} archived)
+          </p>
         </div>
         <Button 
           onClick={handleNewTestCase}
@@ -128,12 +164,57 @@ const TestCaseManager = ({ testCases, onTestCasesChange, onNavigateToGenerator }
         </CardContent>
       </Card>
 
+      {filteredTestCases.length > 0 && (
+        <Card className="bg-slate-800 border-slate-700">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Checkbox
+                  checked={selectedTestCases.length === filteredTestCases.length}
+                  onCheckedChange={handleSelectAll}
+                />
+                <span className="text-white text-sm">
+                  {selectedTestCases.length > 0 
+                    ? `${selectedTestCases.length} selected`
+                    : "Select all"
+                  }
+                </span>
+              </div>
+              {selectedTestCases.length > 0 && (
+                <div className="flex space-x-2">
+                  <Button
+                    size="sm"
+                    onClick={() => handleBulkStatusUpdate("active")}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <Check className="h-4 w-4 mr-1" />
+                    Set Active
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => handleBulkStatusUpdate("archived")}
+                    className="bg-gray-600 hover:bg-gray-700"
+                  >
+                    <Archive className="h-4 w-4 mr-1" />
+                    Archive
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid gap-4">
         {filteredTestCases.map((testCase) => (
           <Card key={testCase.id} className="bg-slate-800 border-slate-700 hover:border-slate-600 transition-colors">
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div className="flex items-start space-x-4">
+                  <Checkbox
+                    checked={selectedTestCases.includes(testCase.id)}
+                    onCheckedChange={(checked) => handleSelectTestCase(testCase.id, checked as boolean)}
+                  />
                   <div className="p-2 bg-slate-700 rounded-lg">
                     <FileText className="h-5 w-5 text-blue-400" />
                   </div>
@@ -144,8 +225,7 @@ const TestCaseManager = ({ testCases, onTestCasesChange, onNavigateToGenerator }
                         <Badge 
                           className={`${getStatusColor(testCase.status)} text-white cursor-pointer`}
                           onClick={() => {
-                            const nextStatus = testCase.status === "draft" ? "active" : 
-                                             testCase.status === "active" ? "archived" : "draft";
+                            const nextStatus = testCase.status === "active" ? "archived" : "active";
                             updateTestCaseStatus(testCase.id, nextStatus);
                           }}
                         >

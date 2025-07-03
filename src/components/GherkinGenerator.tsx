@@ -337,7 +337,7 @@ Feature: ${scenarioDesc}
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="space-y-6">
       <Card className="bg-slate-800 border-slate-700">
         <CardHeader>
           <CardTitle className="text-white flex items-center">
@@ -499,63 +499,42 @@ Feature: ${scenarioDesc}
         </CardContent>
       </Card>
 
-      <Card className="bg-slate-800 border-slate-700">
-        <CardHeader>
-          <div className="flex items-center justify-between">
+      {generatedGherkin && (
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-white">Generated Gherkin</CardTitle>
               <CardDescription className="text-slate-400">
-                AI-generated test scenarios in Gherkin format
+                Your Gherkin scenarios are ready for review and editing
               </CardDescription>
             </div>
-            {generatedGherkin && (
-              <div className="flex space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={copyToClipboard}
-                  className="border-slate-600 text-slate-300 hover:bg-slate-700"
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={downloadGherkin}
-                  className="border-slate-600 text-slate-300 hover:bg-slate-700"
-                >
-                  <Download className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={clearGeneratedGherkin}
-                  className="border-slate-600 text-slate-300 hover:bg-slate-700"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Textarea
-            value={generatedGherkin}
-            onChange={(e) => handleGherkinChange(e.target.value)}
-            placeholder="Generated Gherkin scenarios will appear here..."
-            className="bg-slate-900 border-slate-600 text-green-400 font-mono min-h-[300px] resize-none"
-          />
-          {generatedGherkin && (
-            <Button 
-              onClick={createPlaywright}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-            >
-              <Play className="h-4 w-4 mr-2" />
-              Create Playwright
-            </Button>
-          )}
-        </CardContent>
-      </Card>
+            <div className="flex space-x-2">
+              <Button
+                onClick={clearGeneratedGherkin}
+                variant="outline"
+                size="sm"
+                className="border-slate-600 text-slate-300 hover:bg-slate-700"
+              >
+                Clear
+              </Button>
+              <Button
+                onClick={() => onNavigateToPlaywright?.()}
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+              >
+                Generate Playwright
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Textarea
+              value={generatedGherkin}
+              onChange={(e) => handleGherkinChange(e.target.value)}
+              placeholder="Generated Gherkin scenarios will appear here..."
+              className="bg-slate-900 border-slate-600 text-green-400 font-mono min-h-[300px] resize-none"
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

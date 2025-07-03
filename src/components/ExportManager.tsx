@@ -79,17 +79,26 @@ const ExportManager = ({
     const failedCount = executionResults.filter(r => r.status === "failed").length;
     const totalTests = executionResults.length;
 
+    // Generate filename with format: test-summary-ddMMYYYYHHMMSS
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const filename = `test-summary-${day}${month}${year}${hours}${minutes}${seconds}.md`;
+
     const summary = `# Test Execution Summary
-Generated on: ${new Date().toLocaleString()}
+Generated on: ${now.toLocaleString()}
 
 ## Overview
-- Total Test Cases: ${testCases.length}
-- Executed Tests: ${totalTests}
+- Total Executed Tests: ${totalTests}
 - Passed: ${passedCount}
 - Failed: ${failedCount}
 - Success Rate: ${successPercentage}%
 
-## Test Cases
+## Test Scenarios
 ${testCases.map((testCase, index) => `
 ${index + 1}. ${testCase.name}
    Status: ${testCase.status}
@@ -111,7 +120,7 @@ ${index + 1}. ${result.name}
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `test-summary-${new Date().toISOString().split('T')[0]}.md`;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -119,7 +128,7 @@ ${index + 1}. ${result.name}
     
     toast({
       title: "Test Summary Exported",
-      description: "Complete test summary has been downloaded as markdown file.",
+      description: `Test summary downloaded as ${filename}`,
     });
   };
 
