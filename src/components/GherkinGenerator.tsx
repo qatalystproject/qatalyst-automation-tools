@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,13 +13,15 @@ interface GherkinGeneratorProps {
   onGherkinGenerated?: (gherkin: string, title: string) => void;
   onNavigateToPlaywright?: () => void;
   generatedGherkin?: string;
+  onGherkinChange?: (gherkin: string) => void;
 }
 
 const GherkinGenerator = ({ 
   apiKey, 
   onGherkinGenerated, 
   onNavigateToPlaywright,
-  generatedGherkin: initialGherkin = ""
+  generatedGherkin: initialGherkin = "",
+  onGherkinChange
 }: GherkinGeneratorProps) => {
   const [url, setUrl] = useState("");
   const [scenarioDesc, setScenarioDesc] = useState("");
@@ -29,6 +30,11 @@ const GherkinGenerator = ({
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [csvData, setCsvData] = useState<string[][]>([]);
   const { toast } = useToast();
+
+  const handleGherkinChange = (newGherkin: string) => {
+    setGeneratedGherkin(newGherkin);
+    onGherkinChange?.(newGherkin);
+  };
 
   const extractScenarioTitle = (gherkin: string) => {
     const lines = gherkin.split('\n');
@@ -102,7 +108,7 @@ Requirements:
       const gherkin = await generateGherkinFromOpenAI(url, scenarioDesc);
       const gherkinWithComment = `# URL: ${url}\n${gherkin}`;
       
-      setGeneratedGherkin(gherkinWithComment);
+      handleGherkinChange(gherkinWithComment);
       const title = extractScenarioTitle(gherkin);
       onGherkinGenerated?.(gherkinWithComment, title);
       
@@ -113,7 +119,6 @@ Requirements:
     } catch (error) {
       console.error('OpenAI API Error:', error);
       
-      // Fallback ke mock generation jika API gagal
       const mockGherkin = `# URL: ${url}
 Feature: ${scenarioDesc}
   As a user
@@ -132,7 +137,7 @@ Feature: ${scenarioDesc}
     Then the expected functionality should work
     And no errors should be displayed`;
 
-      setGeneratedGherkin(mockGherkin);
+      handleGherkinChange(mockGherkin);
       const title = extractScenarioTitle(mockGherkin);
       onGherkinGenerated?.(mockGherkin, title);
       
@@ -155,7 +160,6 @@ Feature: ${scenarioDesc}
       const headers = csvData[0];
       const dataRows = csvData.slice(1);
       
-      // Expected headers: No, Test Case, Test Case Description, Preconditions, Test Steps, Expected Result
       const testCaseIndex = headers.findIndex(h => h.toLowerCase().includes('test case') && !h.toLowerCase().includes('description'));
       const descriptionIndex = headers.findIndex(h => h.toLowerCase().includes('description'));
       const preconditionsIndex = headers.findIndex(h => h.toLowerCase().includes('preconditions'));
@@ -171,9 +175,8 @@ Feature: ${scenarioDesc}
         allScenarios += `${featureTitle}\n  As a user\n  I want to validate various functionality\n  So that the system works as expected\n\n`;
       }
 
-      // Generate scenarios for each row of CSV data
       dataRows.forEach((row, index) => {
-        if (row.some(cell => cell.trim())) { // Skip empty rows
+        if (row.some(cell => cell.trim())) {
           const testCase = row[testCaseIndex] || `Test Case ${index + 1}`;
           const description = row[descriptionIndex] || 'Test functionality';
           const preconditions = row[preconditionsIndex] || '';
@@ -182,7 +185,6 @@ Feature: ${scenarioDesc}
           
           allScenarios += `  Scenario: ${testCase}\n`;
           
-          // Handle preconditions (could include login info and URL)
           if (preconditions.trim()) {
             const preconditionLines = preconditions.split(',').map(p => p.trim());
             preconditionLines.forEach(precondition => {
@@ -198,13 +200,11 @@ Feature: ${scenarioDesc}
             allScenarios += `    Given the system is ready\n`;
           }
           
-          // Handle test steps
           const stepLines = testSteps.split(',').map(s => s.trim());
           stepLines.forEach(step => {
             allScenarios += `    When ${step}\n`;
           });
           
-          // Handle expected results
           const resultLines = expectedResult.split(',').map(r => r.trim());
           resultLines.forEach(result => {
             allScenarios += `    Then ${result}\n`;
@@ -214,7 +214,7 @@ Feature: ${scenarioDesc}
         }
       });
 
-      setGeneratedGherkin(allScenarios.trim());
+      handleGherkinChange(allScenarios.trim());
       onGherkinGenerated?.(allScenarios.trim(), featureTitle);
       
       toast({
@@ -333,7 +333,7 @@ Feature: ${scenarioDesc}
   };
 
   const clearGeneratedGherkin = () => {
-    setGeneratedGherkin("");
+    handleGherkinChange("");
   };
 
   return (
@@ -541,7 +541,7 @@ Feature: ${scenarioDesc}
         <CardContent className="space-y-4">
           <Textarea
             value={generatedGherkin}
-            readOnly
+            onChange={(e) => handleGherkinChange(e.target.value)}
             placeholder="Generated Gherkin scenarios will appear here..."
             className="bg-slate-900 border-slate-600 text-green-400 font-mono min-h-[300px] resize-none"
           />
