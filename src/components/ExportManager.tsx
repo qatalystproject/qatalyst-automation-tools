@@ -98,7 +98,7 @@ Generated on: ${now.toLocaleString()}
 - Passed: ${passedCount}
 - Failed: ${failedCount}
 - Success Rate: ${successPercentage}%
-- Archived Test Cases: ${archivedCount}
+- Archived: ${archivedCount}
 
 ## Execution Results
 ${executionResults.map((result, index) => `

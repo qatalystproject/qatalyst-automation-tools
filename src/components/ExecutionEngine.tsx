@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -72,10 +71,20 @@ const ExecutionEngine = ({
     
     toast({
       title: "Headless Mode Active",
-      description: "Tests are running in the background without visible browser windows",
+      description: "Tests are running in the background without visible browser windows. Only active test cases will be executed.",
     });
     
     const updatedResults = [...testResults];
+    const detailedFailureReasons = [
+      "Assertion failed: Expected text 'Welcome' but found 'Hello'",
+      "Element with selector '[data-testid=\"login-button\"]' not found",
+      "Timeout: Element '[placeholder=\"Username\"]' was not visible after 30s",
+      "Expected URL to contain '/dashboard' but got '/login'",
+      "Assertion failed: Expected element to be visible but it was hidden",
+      "Network request failed: GET /api/users returned 404",
+      "Element '[data-test=\"submit\"]' is not clickable at this point",
+      "Expected 5 items but found 3 in the list"
+    ];
     
     for (let i = 0; i < updatedResults.length; i++) {
       // Set test to running
@@ -91,7 +100,8 @@ const ExecutionEngine = ({
         ...updatedResults[i], 
         status: passed ? "passed" as const : "failed" as const,
         duration: `${(Math.random() * 5 + 1).toFixed(1)}s`,
-        details: passed ? "Test passed successfully" : "Test failed - assertion error"
+        details: passed ? "Test passed successfully" : "Test failed - assertion error",
+        error: passed ? undefined : detailedFailureReasons[Math.floor(Math.random() * detailedFailureReasons.length)]
       };
       
       setTestResults([...updatedResults]);
@@ -107,7 +117,7 @@ const ExecutionEngine = ({
     
     toast({
       title: "Test Execution Complete",
-      description: `All test cases executed. Success rate: ${newSuccessPercentage}%`,
+      description: `All active test cases executed. Success rate: ${newSuccessPercentage}%`,
     });
   };
 
@@ -200,7 +210,7 @@ const ExecutionEngine = ({
   // Calculate summary statistics
   const passedCount = testResults.filter(t => t.status === "passed").length;
   const failedCount = testResults.filter(t => t.status === "failed").length;
-  const pendingCount = testResults.filter(t => t.status === "pending").length;
+  const archivedCount = testResults.filter(t => t.status === "archived").length;
   const runningCount = testResults.filter(t => t.status === "running").length;
   const totalTests = testResults.length;
   const currentSuccessRate = totalTests > 0 ? Math.round((passedCount / totalTests) * 100) : successPercentage;
@@ -282,8 +292,8 @@ const ExecutionEngine = ({
                   <div className="text-xs text-red-300">Failed</div>
                 </div>
                 <div className="p-2 bg-slate-600/20 rounded">
-                  <div className="text-lg font-bold text-slate-400">{pendingCount}</div>
-                  <div className="text-xs text-slate-300">Pending</div>
+                  <div className="text-lg font-bold text-slate-400">{archivedCount}</div>
+                  <div className="text-xs text-slate-300">Archived</div>
                 </div>
                 <div className="p-2 bg-yellow-600/20 rounded">
                   <div className="text-lg font-bold text-yellow-400">{runningCount}</div>
@@ -299,7 +309,7 @@ const ExecutionEngine = ({
         <CardHeader>
           <CardTitle className="text-white">Test Results</CardTitle>
           <CardDescription className="text-slate-400">
-            Execution results from Playwright tests ({testResults.length} tests)
+            Execution results from Playwright tests ({testResults.length} tests, only active test cases executed)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -311,6 +321,9 @@ const ExecutionEngine = ({
                   <div>
                     <h4 className="text-white font-medium">{result.name}</h4>
                     <p className="text-sm text-slate-400">{result.details}</p>
+                    {result.status === "failed" && result.error && (
+                      <p className="text-sm text-red-400 mt-1">Error: {result.error}</p>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">

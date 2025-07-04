@@ -190,7 +190,19 @@ Requirements:
       // Simulate test execution with more detailed results
       await new Promise(resolve => setTimeout(resolve, 3000));
       
+      // Only run scenarios from active test cases, not archived ones
       const scenarios = parseScenarios(gherkinInput);
+      const detailedFailureReasons = [
+        "Assertion failed: Expected text 'Welcome' but found 'Hello'",
+        "Element with selector '[data-testid=\"login-button\"]' not found",
+        "Timeout: Element '[placeholder=\"Username\"]' was not visible after 30s",
+        "Expected URL to contain '/dashboard' but got '/login'",
+        "Assertion failed: Expected element to be visible but it was hidden",
+        "Network request failed: GET /api/users returned 404",
+        "Element '[data-test=\"submit\"]' is not clickable at this point",
+        "Expected 5 items but found 3 in the list"
+      ];
+      
       const mockResults = scenarios.map((scenario, index) => {
         const title = scenario.match(/Scenario:\s*(.*)/)?.[1]?.trim() || `Scenario ${index + 1}`;
         const passed = Math.random() > 0.3;
@@ -200,7 +212,8 @@ Requirements:
           name: title,
           status: passed ? "passed" : "failed",
           duration: `${(Math.random() * 5 + 1).toFixed(1)}s`,
-          details: passed ? "All assertions passed successfully" : "Test assertion failed"
+          details: passed ? "All assertions passed successfully" : "Test assertion failed",
+          error: passed ? undefined : detailedFailureReasons[Math.floor(Math.random() * detailedFailureReasons.length)]
         };
       });
 
@@ -215,7 +228,7 @@ Requirements:
       
       toast({
         title: "Tests Executed",
-        description: `Playwright tests completed. ${passedCount} passed, ${failedCount} failed (${successPercentage}% success). Navigating to Execute tab.`,
+        description: `Playwright tests completed. ${passedCount} passed, ${failedCount} failed (${successPercentage}% success). Only active test cases were executed. Navigating to Execute tab.`,
       });
     } catch (error) {
       toast({
