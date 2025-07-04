@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -121,9 +120,9 @@ const Index = () => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="h-8 w-8 rounded-lg overflow-hidden">
+              <div className="h-12 w-12 rounded-lg overflow-hidden">
                 <img 
-                  src="/lovable-uploads/f54f7e80-7588-4394-a476-2b8dba11ba1c.png" 
+                  src="/lovable-uploads/cbcade91-def1-4f98-8c03-f4b432f827b7.png" 
                   alt="QAtalyst Logo" 
                   className="h-full w-full object-contain"
                 />
@@ -211,6 +210,7 @@ const Index = () => {
                 isHeadlessMode={isHeadlessMode}
                 onHeadlessModeChange={setIsHeadlessMode}
                 onExecutionResults={handleExecutionResultsUpdate}
+                testCases={testCases}
               />
             </TabsContent>
 

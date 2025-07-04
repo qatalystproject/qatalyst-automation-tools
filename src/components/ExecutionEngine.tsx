@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +20,7 @@ interface ExecutionEngineProps {
   isHeadlessMode?: boolean;
   onHeadlessModeChange?: (headless: boolean) => void;
   onExecutionResults?: (results: TestResult[], percentage: number) => void;
+  testCases?: any[];
 }
 
 const ExecutionEngine = ({ 
@@ -28,7 +28,8 @@ const ExecutionEngine = ({
   successPercentage = 0,
   isHeadlessMode = true,
   onHeadlessModeChange,
-  onExecutionResults
+  onExecutionResults,
+  testCases = []
 }: ExecutionEngineProps) => {
   const [isRunning, setIsRunning] = useState(false);
   const [testResults, setTestResults] = useState<TestResult[]>(executionResults);
@@ -60,10 +61,16 @@ const ExecutionEngine = ({
   };
 
   const runTests = async () => {
-    if (testResults.length === 0) {
+    // Filter only active test results
+    const activeTestResults = testResults.filter(test => {
+      const correspondingTestCase = testCases.find(tc => tc.name === test.name);
+      return !correspondingTestCase || correspondingTestCase.status === "active";
+    });
+    
+    if (activeTestResults.length === 0) {
       toast({
-        title: "No Tests Available",
-        description: "Please generate tests from the Playwright tab first.",
+        title: "No Active Tests Available",
+        description: "Please ensure you have active test cases to execute.",
         variant: "destructive",
       });
       return;
@@ -72,8 +79,8 @@ const ExecutionEngine = ({
     setIsRunning(true);
     
     toast({
-      title: "Headless Mode Active",
-      description: "Tests are running in the background without visible browser windows. Only active test cases will be executed.",
+      title: "Running Active Tests",
+      description: `Executing ${activeTestResults.length} active test case(s) in headless mode. Archived tests are skipped.`,
     });
     
     const updatedResults = [...testResults];
@@ -89,6 +96,13 @@ const ExecutionEngine = ({
     ];
     
     for (let i = 0; i < updatedResults.length; i++) {
+      // Check if this test case is active
+      const correspondingTestCase = testCases.find(tc => tc.name === updatedResults[i].name);
+      if (correspondingTestCase && correspondingTestCase.status === "archived") {
+        // Skip archived test cases
+        continue;
+      }
+      
       // Set test to running
       updatedResults[i] = { ...updatedResults[i], status: "running" as const };
       setTestResults([...updatedResults]);
@@ -113,15 +127,19 @@ const ExecutionEngine = ({
     
     setIsRunning(false);
     
-    // Calculate success percentage
-    const passedCount = updatedResults.filter(r => r.status === "passed").length;
-    const newSuccessPercentage = Math.round((passedCount / updatedResults.length) * 100);
+    // Calculate success percentage only for active tests
+    const activeResults = updatedResults.filter(r => {
+      const correspondingTestCase = testCases.find(tc => tc.name === r.name);
+      return !correspondingTestCase || correspondingTestCase.status === "active";
+    });
+    const passedCount = activeResults.filter(r => r.status === "passed").length;
+    const newSuccessPercentage = activeResults.length > 0 ? Math.round((passedCount / activeResults.length) * 100) : 0;
     
     onExecutionResults?.(updatedResults, newSuccessPercentage);
     
     toast({
       title: "Test Execution Complete",
-      description: `All active test cases executed. Success rate: ${newSuccessPercentage}%`,
+      description: `${activeResults.length} active test case(s) executed. Success rate: ${newSuccessPercentage}%`,
     });
   };
 
@@ -182,8 +200,12 @@ const ExecutionEngine = ({
     setIsRunning(false);
     
     // Update success percentage after rerun
-    const passedCount = updatedResults.filter(r => r.status === "passed").length;
-    const newSuccessPercentage = Math.round((passedCount / updatedResults.length) * 100);
+    const activeResults = updatedResults.filter(r => {
+      const correspondingTestCase = testCases.find(tc => tc.name === r.name);
+      return !correspondingTestCase || correspondingTestCase.status === "active";
+    });
+    const passedCount = activeResults.filter(r => r.status === "passed").length;
+    const newSuccessPercentage = activeResults.length > 0 ? Math.round((passedCount / activeResults.length) * 100) : 0;
     
     onExecutionResults?.(updatedResults, newSuccessPercentage);
     
@@ -215,7 +237,7 @@ const ExecutionEngine = ({
   // Calculate summary statistics
   const passedCount = testResults.filter(t => t.status === "passed").length;
   const failedCount = testResults.filter(t => t.status === "failed").length;
-  const archivedCount = testResults.filter(t => t.status === "archived").length;
+  const archivedCount = testCases.filter(tc => tc.status === "archived").length;
   const runningCount = testResults.filter(t => t.status === "running").length;
   const totalTests = testResults.length;
   const currentSuccessRate = totalTests > 0 ? Math.round((passedCount / totalTests) * 100) : successPercentage;
@@ -236,7 +258,7 @@ const ExecutionEngine = ({
               <span className="text-white font-medium">Headless Mode</span>
             </div>
             <div className="text-xs text-slate-400 mt-2">
-              Tests run in the background without opening browser windows for faster execution
+              Tests run in the background without opening browser windows for faster execution. Only active test cases will be executed.
             </div>
           </CardContent>
         </Card>
@@ -253,7 +275,7 @@ const ExecutionEngine = ({
                 className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
               >
                 <Play className="h-4 w-4 mr-2" />
-                Run All Tests (Headless)
+                Run Active Tests (Headless)
               </Button>
             ) : (
               <Button 
