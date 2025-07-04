@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,9 +9,10 @@ import { useToast } from "@/hooks/use-toast";
 interface TestResult {
   id: string;
   name: string;
-  status: "running" | "passed" | "failed" | "pending";
+  status: "running" | "passed" | "failed" | "pending" | "archived";
   duration: string;
   details: string;
+  error?: string;
 }
 
 interface ExecutionEngineProps {
@@ -96,12 +98,14 @@ const ExecutionEngine = ({
       
       // Determine test result
       const passed = Math.random() > 0.3;
+      const errorMessage = passed ? undefined : detailedFailureReasons[Math.floor(Math.random() * detailedFailureReasons.length)];
+      
       updatedResults[i] = { 
         ...updatedResults[i], 
         status: passed ? "passed" as const : "failed" as const,
         duration: `${(Math.random() * 5 + 1).toFixed(1)}s`,
         details: passed ? "Test passed successfully" : "Test failed - assertion error",
-        error: passed ? undefined : detailedFailureReasons[Math.floor(Math.random() * detailedFailureReasons.length)]
+        error: errorMessage
       };
       
       setTestResults([...updatedResults]);
@@ -203,6 +207,7 @@ const ExecutionEngine = ({
       case "running": return "bg-yellow-600";
       case "passed": return "bg-green-600";
       case "failed": return "bg-red-600";
+      case "archived": return "bg-slate-600";
       default: return "bg-slate-600";
     }
   };
