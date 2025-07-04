@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -124,7 +125,7 @@ const Index = () => {
                 <Play className="h-4 w-4 text-white" />
               </div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                Test Automation Platform
+                QAtalyst
               </h1>
             </div>
             <div className="flex items-center space-x-2">

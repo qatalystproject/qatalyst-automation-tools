@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Wand2, Copy, Download, Upload, FileText, X, Play, Link, Trash2 } from "lucide-react";
+import { Wand2, Copy, Upload, FileText, X, Play, Link, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface GherkinGeneratorProps {
@@ -295,23 +295,6 @@ Feature: ${scenarioDesc}
     });
   };
 
-  const downloadGherkin = () => {
-    const blob = new Blob([generatedGherkin], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'test-scenarios.feature';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: "Downloaded",
-      description: "Gherkin file has been downloaded!",
-    });
-  };
-
   const createPlaywright = () => {
     if (generatedGherkin) {
       onNavigateToPlaywright?.();
@@ -419,7 +402,7 @@ Feature: ${scenarioDesc}
                 variant="outline"
                 className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
               >
-                <Download className="h-4 w-4 mr-2" />
+                <FileText className="h-4 w-4 mr-2" />
                 Download CSV Template
               </Button>
               
@@ -499,42 +482,51 @@ Feature: ${scenarioDesc}
         </CardContent>
       </Card>
 
-      {generatedGherkin && (
-        <Card className="bg-slate-800 border-slate-700">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-white">Generated Gherkin</CardTitle>
-              <CardDescription className="text-slate-400">
-                Your Gherkin scenarios are ready for review and editing
-              </CardDescription>
-            </div>
-            <div className="flex space-x-2">
-              <Button
-                onClick={clearGeneratedGherkin}
-                variant="outline"
-                size="sm"
-                className="border-slate-600 text-slate-300 hover:bg-slate-700"
-              >
-                Clear
-              </Button>
-              <Button
-                onClick={() => onNavigateToPlaywright?.()}
-                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-              >
-                Generate Playwright
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Textarea
-              value={generatedGherkin}
-              onChange={(e) => handleGherkinChange(e.target.value)}
-              placeholder="Generated Gherkin scenarios will appear here..."
-              className="bg-slate-900 border-slate-600 text-green-400 font-mono min-h-[300px] resize-none"
-            />
-          </CardContent>
-        </Card>
-      )}
+      <Card className="bg-slate-800 border-slate-700">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-white">Generated Gherkin</CardTitle>
+            <CardDescription className="text-slate-400">
+              Your Gherkin scenarios are ready for review and editing
+            </CardDescription>
+          </div>
+          <div className="flex space-x-2">
+            <Button
+              onClick={copyToClipboard}
+              variant="outline"
+              size="sm"
+              disabled={!generatedGherkin.trim()}
+              className="border-slate-600 text-slate-300 hover:bg-slate-700"
+            >
+              <Copy className="h-4 w-4 mr-2" />
+              Copy
+            </Button>
+            <Button
+              onClick={clearGeneratedGherkin}
+              variant="outline"
+              size="sm"
+              className="border-slate-600 text-slate-300 hover:bg-slate-700"
+            >
+              Clear
+            </Button>
+            <Button
+              onClick={() => onNavigateToPlaywright?.()}
+              disabled={!generatedGherkin.trim()}
+              className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+            >
+              Generate Playwright
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Textarea
+            value={generatedGherkin}
+            onChange={(e) => handleGherkinChange(e.target.value)}
+            placeholder="Generated Gherkin scenarios will appear here..."
+            className="bg-slate-900 border-slate-600 text-green-400 font-mono min-h-[300px] resize-none"
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };

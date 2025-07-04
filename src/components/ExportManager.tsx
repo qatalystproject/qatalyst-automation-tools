@@ -78,6 +78,7 @@ const ExportManager = ({
     const passedCount = executionResults.filter(r => r.status === "passed").length;
     const failedCount = executionResults.filter(r => r.status === "failed").length;
     const totalTests = executionResults.length;
+    const archivedCount = testCases.filter(tc => tc.status === "archived").length;
 
     // Generate filename with format: test-summary-ddMMYYYYHHMMSS
     const now = new Date();
@@ -97,22 +98,15 @@ Generated on: ${now.toLocaleString()}
 - Passed: ${passedCount}
 - Failed: ${failedCount}
 - Success Rate: ${successPercentage}%
-
-## Test Scenarios
-${testCases.map((testCase, index) => `
-${index + 1}. ${testCase.name}
-   Status: ${testCase.status}
-   Type: ${testCase.type}
-   Last Modified: ${testCase.lastModified}
-   Description: ${testCase.description}
-`).join('')}
+- Archived Test Cases: ${archivedCount}
 
 ## Execution Results
 ${executionResults.map((result, index) => `
 ${index + 1}. ${result.name}
    Status: ${result.status}
    Duration: ${result.duration}
-   Details: ${result.details}
+   Details: ${result.details}${result.status === 'failed' && result.error ? `
+   Failure Reason: ${result.error}` : ''}
 `).join('')}
 `;
 
