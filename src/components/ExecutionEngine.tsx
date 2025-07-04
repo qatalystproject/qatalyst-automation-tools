@@ -61,13 +61,10 @@ const ExecutionEngine = ({
   };
 
   const runTests = async () => {
-    // Filter only active test results
-    const activeTestResults = testResults.filter(test => {
-      const correspondingTestCase = testCases.find(tc => tc.name === test.name);
-      return !correspondingTestCase || correspondingTestCase.status === "active";
-    });
+    // Get active test cases from testCases prop
+    const activeTestCases = testCases.filter(tc => tc.status === "active");
     
-    if (activeTestResults.length === 0) {
+    if (activeTestCases.length === 0) {
       toast({
         title: "No Active Tests Available",
         description: "Please ensure you have active test cases to execute.",
@@ -76,11 +73,17 @@ const ExecutionEngine = ({
       return;
     }
     
+    // Filter test results to only include active ones based on testCases
+    const activeTestResults = testResults.filter(test => {
+      const correspondingTestCase = testCases.find(tc => tc.name === test.name);
+      return correspondingTestCase && correspondingTestCase.status === "active";
+    });
+    
     setIsRunning(true);
     
     toast({
       title: "Running Active Tests",
-      description: `Executing ${activeTestResults.length} active test case(s) in headless mode. Archived tests are skipped.`,
+      description: `Executing ${activeTestCases.length} active test case(s) in headless mode. Archived tests are skipped.`,
     });
     
     const updatedResults = [...testResults];
@@ -95,11 +98,12 @@ const ExecutionEngine = ({
       "Expected 5 items but found 3 in the list"
     ];
     
+    // Only run tests that have active status in testCases
     for (let i = 0; i < updatedResults.length; i++) {
-      // Check if this test case is active
       const correspondingTestCase = testCases.find(tc => tc.name === updatedResults[i].name);
-      if (correspondingTestCase && correspondingTestCase.status === "archived") {
-        // Skip archived test cases
+      
+      // Skip if test case doesn't exist or is archived
+      if (!correspondingTestCase || correspondingTestCase.status === "archived") {
         continue;
       }
       
@@ -130,7 +134,7 @@ const ExecutionEngine = ({
     // Calculate success percentage only for active tests
     const activeResults = updatedResults.filter(r => {
       const correspondingTestCase = testCases.find(tc => tc.name === r.name);
-      return !correspondingTestCase || correspondingTestCase.status === "active";
+      return correspondingTestCase && correspondingTestCase.status === "active";
     });
     const passedCount = activeResults.filter(r => r.status === "passed").length;
     const newSuccessPercentage = activeResults.length > 0 ? Math.round((passedCount / activeResults.length) * 100) : 0;
@@ -202,7 +206,7 @@ const ExecutionEngine = ({
     // Update success percentage after rerun
     const activeResults = updatedResults.filter(r => {
       const correspondingTestCase = testCases.find(tc => tc.name === r.name);
-      return !correspondingTestCase || correspondingTestCase.status === "active";
+      return correspondingTestCase && correspondingTestCase.status === "active";
     });
     const passedCount = activeResults.filter(r => r.status === "passed").length;
     const newSuccessPercentage = activeResults.length > 0 ? Math.round((passedCount / activeResults.length) * 100) : 0;
@@ -234,10 +238,10 @@ const ExecutionEngine = ({
     }
   };
 
-  // Calculate summary statistics
+  // Calculate summary statistics - read archived count from testCases
   const passedCount = testResults.filter(t => t.status === "passed").length;
   const failedCount = testResults.filter(t => t.status === "failed").length;
-  const archivedCount = testCases.filter(tc => tc.status === "archived").length;
+  const archivedCount = testCases.filter(tc => tc.status === "archived").length; // Read from testCases prop
   const runningCount = testResults.filter(t => t.status === "running").length;
   const totalTests = testResults.length;
   const currentSuccessRate = totalTests > 0 ? Math.round((passedCount / totalTests) * 100) : successPercentage;
