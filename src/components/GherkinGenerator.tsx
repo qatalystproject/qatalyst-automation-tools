@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -160,6 +161,7 @@ Feature: ${scenarioDesc}
       const headers = csvData[0];
       const dataRows = csvData.slice(1);
       
+      // Find column indices based on header names
       const testCaseIndex = headers.findIndex(h => h.toLowerCase().includes('test case') && !h.toLowerCase().includes('description'));
       const descriptionIndex = headers.findIndex(h => h.toLowerCase().includes('description'));
       const preconditionsIndex = headers.findIndex(h => h.toLowerCase().includes('preconditions'));
@@ -170,28 +172,32 @@ Feature: ${scenarioDesc}
       let featureTitle = 'CSV Generated Test Cases';
       
       if (dataRows.length > 0) {
-        const firstTestCase = dataRows[0][testCaseIndex] || 'Test Cases';
-        featureTitle = `Feature: ${firstTestCase} and Related Tests`;
+        featureTitle = `Feature: Automated Test Scenarios`;
         allScenarios += `${featureTitle}\n  As a user\n  I want to validate various functionality\n  So that the system works as expected\n\n`;
       }
 
       dataRows.forEach((row, index) => {
         if (row.some(cell => cell.trim())) {
+          // Use "Test Case" column for scenario name
           const testCase = row[testCaseIndex] || `Test Case ${index + 1}`;
-          const description = row[descriptionIndex] || 'Test functionality';
+          const description = row[descriptionIndex] || '';
           const preconditions = row[preconditionsIndex] || '';
-          const testSteps = row[stepsIndex] || 'Execute test';
-          const expectedResult = row[expectedIndex] || 'System should work correctly';
+          const testSteps = row[stepsIndex] || '';
+          const expectedResult = row[expectedIndex] || '';
           
           allScenarios += `  Scenario: ${testCase}\n`;
           
+          // Use "Preconditions" for Given steps (URL and Credentials)
           if (preconditions.trim()) {
             const preconditionLines = preconditions.split(',').map(p => p.trim());
             preconditionLines.forEach(precondition => {
-              if (precondition.toLowerCase().includes('login') || precondition.toLowerCase().includes('auth')) {
-                allScenarios += `    Given I am logged in as authorized user\n`;
-              } else if (precondition.toLowerCase().includes('url') || precondition.toLowerCase().includes('page')) {
-                allScenarios += `    Given I am on the target page\n`;
+              if (precondition.toLowerCase().includes('url:')) {
+                const url = precondition.replace(/url:\s*/i, '').trim();
+                allScenarios += `    Given I navigate to "${url}"\n`;
+              } else if (precondition.toLowerCase().includes('login') || precondition.toLowerCase().includes('credentials')) {
+                allScenarios += `    Given I am logged in with valid credentials\n`;
+              } else if (precondition.toLowerCase().includes('auth')) {
+                allScenarios += `    Given I am authenticated as authorized user\n`;
               } else {
                 allScenarios += `    Given ${precondition}\n`;
               }
@@ -200,15 +206,33 @@ Feature: ${scenarioDesc}
             allScenarios += `    Given the system is ready\n`;
           }
           
-          const stepLines = testSteps.split(',').map(s => s.trim());
-          stepLines.forEach(step => {
-            allScenarios += `    When ${step}\n`;
-          });
+          // Use "Test Steps" for When and And steps
+          if (testSteps.trim()) {
+            const stepLines = testSteps.split(',').map(s => s.trim());
+            stepLines.forEach((step, stepIndex) => {
+              if (stepIndex === 0) {
+                allScenarios += `    When ${step}\n`;
+              } else {
+                allScenarios += `    And ${step}\n`;
+              }
+            });
+          } else {
+            allScenarios += `    When I execute the test action\n`;
+          }
           
-          const resultLines = expectedResult.split(',').map(r => r.trim());
-          resultLines.forEach(result => {
-            allScenarios += `    Then ${result}\n`;
-          });
+          // Use "Expected Result" for Then steps
+          if (expectedResult.trim()) {
+            const resultLines = expectedResult.split(',').map(r => r.trim());
+            resultLines.forEach((result, resultIndex) => {
+              if (resultIndex === 0) {
+                allScenarios += `    Then ${result}\n`;
+              } else {
+                allScenarios += `    And ${result}\n`;
+              }
+            });
+          } else {
+            allScenarios += `    Then the system should work correctly\n`;
+          }
           
           allScenarios += '\n';
         }
@@ -443,29 +467,31 @@ Feature: ${scenarioDesc}
               {csvData.length > 0 && (
                 <div className="space-y-2">
                   <h4 className="text-white font-medium text-sm">Preview ({csvData.length} rows)</h4>
-                  <div className="bg-slate-900 rounded p-2 max-h-32 overflow-auto">
-                    <table className="text-xs text-slate-300 w-full">
-                      <thead>
-                        <tr className="border-b border-slate-700">
-                          {csvData[0]?.slice(0, 4).map((header, index) => (
-                            <th key={index} className="text-left p-1 font-semibold text-blue-400">
-                              {header}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {csvData.slice(1, 4).map((row, index) => (
-                          <tr key={index} className="border-b border-slate-800">
-                            {row.slice(0, 4).map((cell, cellIndex) => (
-                              <td key={cellIndex} className="p-1">
-                                {cell}
-                              </td>
+                  <div className="bg-slate-900 rounded p-4 max-h-64 overflow-auto">
+                    <div className="overflow-x-auto">
+                      <table className="text-xs text-slate-300 w-full border-collapse">
+                        <thead>
+                          <tr className="border-b border-slate-700">
+                            {csvData[0]?.map((header, index) => (
+                              <th key={index} className="text-left p-2 font-semibold text-blue-400 border-r border-slate-700 min-w-[120px]">
+                                {header}
+                              </th>
                             ))}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {csvData.slice(1, 4).map((row, rowIndex) => (
+                            <tr key={rowIndex} className="border-b border-slate-800 hover:bg-slate-800/50">
+                              {row.map((cell, cellIndex) => (
+                                <td key={cellIndex} className="p-2 border-r border-slate-800 max-w-[200px] truncate" title={cell}>
+                                  {cell}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               )}
