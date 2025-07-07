@@ -467,30 +467,31 @@ Feature: ${scenarioDesc}
               {csvData.length > 0 && (
                 <div className="space-y-2">
                   <h4 className="text-white font-medium text-sm">Preview ({csvData.length - 1} data rows)</h4>
-                  <div className="bg-slate-900 rounded p-4 max-h-64 overflow-auto">
-                    <div className="overflow-x-auto">
-                      <table className="text-xs text-slate-300 w-full border-collapse">
-                        <thead>
-                          <tr className="border-b border-slate-700">
-                            {csvData[0]?.map((header, index) => (
-                              <th key={index} className="text-left p-2 font-semibold text-blue-400 border-r border-slate-700 min-w-[120px]">
-                                {header}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {csvData.slice(1, 4).map((row, rowIndex) => (
-                            <tr key={rowIndex} className="border-b border-slate-800 hover:bg-slate-800/50">
-                              {row.map((cell, cellIndex) => (
-                                <td key={cellIndex} className="p-2 border-r border-slate-800 max-w-[200px] truncate" title={cell}>
-                                  {cell}
-                                </td>
-                              ))}
-                            </tr>
+                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                    <div className="overflow-auto max-h-80">
+                      <div className="min-w-full">
+                        <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${csvData[0]?.length || 1}, minmax(150px, 1fr))` }}>
+                          {/* Header Row */}
+                          {csvData[0]?.map((header, index) => (
+                            <div key={`header-${index}`} className="bg-slate-800 border border-slate-600 p-3 rounded font-semibold text-blue-400 text-sm">
+                              {header}
+                            </div>
                           ))}
-                        </tbody>
-                      </table>
+                          
+                          {/* Data Rows */}
+                          {csvData.slice(1).map((row, rowIndex) => (
+                            row.map((cell, cellIndex) => (
+                              <div 
+                                key={`cell-${rowIndex}-${cellIndex}`} 
+                                className="bg-slate-800/50 border border-slate-700 p-3 rounded text-slate-300 text-sm break-words"
+                                title={cell}
+                              >
+                                {cell || '-'}
+                              </div>
+                            ))
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
