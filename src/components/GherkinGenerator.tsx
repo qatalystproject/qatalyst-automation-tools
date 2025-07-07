@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -189,7 +188,8 @@ Feature: ${scenarioDesc}
           
           // Use "Preconditions" for Given steps (URL and Credentials)
           if (preconditions.trim()) {
-            const preconditionLines = preconditions.split(',').map(p => p.trim());
+            // Split by comma, semicolon, or newline
+            const preconditionLines = preconditions.split(/[,;\n]/).map(p => p.trim()).filter(p => p);
             preconditionLines.forEach(precondition => {
               if (precondition.toLowerCase().includes('url:')) {
                 const url = precondition.replace(/url:\s*/i, '').trim();
@@ -208,7 +208,8 @@ Feature: ${scenarioDesc}
           
           // Use "Test Steps" for When and And steps
           if (testSteps.trim()) {
-            const stepLines = testSteps.split(',').map(s => s.trim());
+            // Split by comma, semicolon, or newline
+            const stepLines = testSteps.split(/[,;\n]/).map(s => s.trim()).filter(s => s);
             stepLines.forEach((step, stepIndex) => {
               if (stepIndex === 0) {
                 allScenarios += `    When ${step}\n`;
@@ -220,9 +221,10 @@ Feature: ${scenarioDesc}
             allScenarios += `    When I execute the test action\n`;
           }
           
-          // Use "Expected Result" for Then steps
+          // Use "Expected Result" for Then steps - Handle multiple lines
           if (expectedResult.trim()) {
-            const resultLines = expectedResult.split(',').map(r => r.trim());
+            // Split by comma, semicolon, or newline to handle multiple expected results
+            const resultLines = expectedResult.split(/[,;\n]/).map(r => r.trim()).filter(r => r);
             resultLines.forEach((result, resultIndex) => {
               if (resultIndex === 0) {
                 allScenarios += `    Then ${result}\n`;
