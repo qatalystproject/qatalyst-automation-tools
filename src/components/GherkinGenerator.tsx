@@ -466,7 +466,7 @@ Feature: ${scenarioDesc}
               
               {csvData.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-white font-medium text-sm">Preview ({csvData.length} rows)</h4>
+                  <h4 className="text-white font-medium text-sm">Preview ({csvData.length - 1} data rows)</h4>
                   <div className="bg-slate-900 rounded p-4 max-h-64 overflow-auto">
                     <div className="overflow-x-auto">
                       <table className="text-xs text-slate-300 w-full border-collapse">
