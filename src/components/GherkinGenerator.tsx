@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -206,10 +207,15 @@ Feature: ${scenarioDesc}
             allScenarios += `    Given the system is ready\n`;
           }
           
-          // Use "Test Steps" for When and And steps
+          // Use "Test Steps" for When and And steps - Enhanced multi-line handling
           if (testSteps.trim()) {
-            // Split by comma, semicolon, or newline
-            const stepLines = testSteps.split(/[,;\n]/).map(s => s.trim()).filter(s => s);
+            // Split by comma, semicolon, newline, or numbered list (1., 2., etc.)
+            const stepLines = testSteps
+              .split(/[,;\n]|(?=\d+\.)/)
+              .map(s => s.trim())
+              .map(s => s.replace(/^\d+\.\s*/, '')) // Remove numbering like "1. ", "2. "
+              .filter(s => s);
+            
             stepLines.forEach((step, stepIndex) => {
               if (stepIndex === 0) {
                 allScenarios += `    When ${step}\n`;
@@ -223,8 +229,13 @@ Feature: ${scenarioDesc}
           
           // Use "Expected Result" for Then steps - Handle multiple lines
           if (expectedResult.trim()) {
-            // Split by comma, semicolon, or newline to handle multiple expected results
-            const resultLines = expectedResult.split(/[,;\n]/).map(r => r.trim()).filter(r => r);
+            // Split by comma, semicolon, newline, or numbered list to handle multiple expected results
+            const resultLines = expectedResult
+              .split(/[,;\n]|(?=\d+\.)/)
+              .map(r => r.trim())
+              .map(r => r.replace(/^\d+\.\s*/, '')) // Remove numbering like "1. ", "2. "
+              .filter(r => r);
+            
             resultLines.forEach((result, resultIndex) => {
               if (resultIndex === 0) {
                 allScenarios += `    Then ${result}\n`;
