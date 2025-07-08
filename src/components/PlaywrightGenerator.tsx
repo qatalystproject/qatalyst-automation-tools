@@ -258,6 +258,11 @@ Requirements:
     onPlaywrightCodeChange?.("");
   };
 
+  const handlePlaywrightCodeChange = (newCode: string) => {
+    setPlaywrightCode(newCode);
+    onPlaywrightCodeChange?.(newCode);
+  };
+
   return (
     <div className="space-y-6">
       <Card className="bg-slate-800 border-slate-700">
@@ -347,11 +352,11 @@ Feature: Login functionality
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <textarea
+          <Textarea
             value={playwrightCode}
-            readOnly
+            onChange={(e) => handlePlaywrightCodeChange(e.target.value)}
             placeholder="Generated Playwright automation code will appear here..."
-            className="w-full h-80 bg-slate-900 border border-slate-600 rounded p-3 text-blue-300 font-mono text-sm resize-none"
+            className="bg-slate-900 border-slate-600 text-blue-300 font-mono text-sm min-h-[320px] resize-none"
           />
           {playwrightCode && (
             <Button 

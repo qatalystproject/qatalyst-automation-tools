@@ -161,12 +161,13 @@ Feature: ${scenarioDesc}
       const headers = csvData[0];
       const dataRows = csvData.slice(1);
       
-      // Find column indices based on header names
-      const testCaseIndex = headers.findIndex(h => h.toLowerCase().includes('test case') && !h.toLowerCase().includes('description'));
-      const descriptionIndex = headers.findIndex(h => h.toLowerCase().includes('description'));
-      const preconditionsIndex = headers.findIndex(h => h.toLowerCase().includes('preconditions'));
-      const stepsIndex = headers.findIndex(h => h.toLowerCase().includes('steps'));
-      const expectedIndex = headers.findIndex(h => h.toLowerCase().includes('expected'));
+      // Find column indices based on exact header names you specified
+      const noIndex = headers.findIndex(h => h.trim() === 'No');
+      const testCaseIndex = headers.findIndex(h => h.trim() === 'Test Case');
+      const descriptionIndex = headers.findIndex(h => h.trim() === 'Test Case Description');
+      const preconditionsIndex = headers.findIndex(h => h.trim() === 'Preconditions');
+      const stepsIndex = headers.findIndex(h => h.trim() === 'Test Steps');
+      const expectedIndex = headers.findIndex(h => h.trim() === 'Expected Result');
       
       let allScenarios = '';
       let featureTitle = 'CSV Generated Test Cases';
