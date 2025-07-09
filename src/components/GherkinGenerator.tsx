@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Wand2, Copy, Upload, FileText, X, Play, Link, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import Papa from 'papaparse';
 
 interface GherkinGeneratorProps {
   apiKey: string;
@@ -297,19 +298,30 @@ Feature: ${scenarioDesc}
     if (file && file.type === "text/csv") {
       setCsvFile(file);
       
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const text = e.target?.result as string;
-        const rows = text.split('\n').map(row => 
-          row.split(',').map(cell => cell.trim().replace(/^"|"$/g, ''))
-        );
-        setCsvData(rows.filter(row => row.some(cell => cell.trim())));
-      };
-      reader.readAsText(file);
-      
-      toast({
-        title: "CSV Uploaded",
-        description: `File "${file.name}" has been uploaded successfully.`,
+      Papa.parse(file, {
+        complete: (results) => {
+          const parsedData = results.data as string[][];
+          // Filter out empty rows
+          const filteredData = parsedData.filter(row => 
+            row.some(cell => cell && cell.trim())
+          );
+          setCsvData(filteredData);
+          
+          toast({
+            title: "CSV Uploaded",
+            description: `File "${file.name}" has been uploaded and parsed successfully.`,
+          });
+        },
+        header: false,
+        skipEmptyLines: 'greedy',
+        error: (error) => {
+          console.error('CSV parsing error:', error);
+          toast({
+            title: "Parsing Error",
+            description: "Failed to parse CSV file. Please check the format.",
+            variant: "destructive",
+          });
+        }
       });
     } else {
       toast({
@@ -359,16 +371,17 @@ Feature: ${scenarioDesc}
 
   // Helper function to format multi-line content for display
   const formatMultiLineContent = (content: string) => {
-    if (!content) return '-';
+    if (!content || content.trim() === '') return '-';
     
-    // Split by common delimiters and clean up
+    // For Test Steps and Expected Result, split by line breaks first, then by other delimiters
     const lines = content
-      .split(/[,;\n]|(?=\d+\.)/)
+      .split(/\n/)  // Split by actual line breaks first
+      .flatMap(line => line.split(/[,;]|(?=\d+\.)/))  // Then split by other delimiters
       .map(line => line.trim())
-      .map(line => line.replace(/^\d+\.\s*/, ''))
+      .map(line => line.replace(/^\d+\.\s*/, ''))  // Remove numbering
       .filter(line => line);
     
-    return lines.length > 1 ? lines : [content];
+    return lines.length > 1 ? lines : [content.trim()];
   };
 
   return (
@@ -522,7 +535,7 @@ Feature: ${scenarioDesc}
                                     className="bg-slate-800/50 border border-slate-700 p-3 rounded text-slate-300 text-sm"
                                     title={cellContent}
                                   >
-                                    {Array.isArray(formattedLines) ? (
+                                    {Array.isArray(formattedLines) && formattedLines.length > 1 ? (
                                       <div className="space-y-1">
                                         {formattedLines.map((line, lineIndex) => (
                                           <div key={lineIndex} className="break-words">
@@ -531,7 +544,7 @@ Feature: ${scenarioDesc}
                                         ))}
                                       </div>
                                     ) : (
-                                      <div className="break-words">{formattedLines}</div>
+                                      <div className="break-words">{cellContent === '-' ? '-' : formattedLines[0] || cellContent}</div>
                                     )}
                                   </div>
                                 );
