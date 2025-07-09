@@ -298,15 +298,15 @@ Requirements:
 
   return (
     <div className="space-y-6">
-      <Card className="bg-slate-800 border-slate-700">
+      <Card className="bg-midnight-navy border-bright-cyan/20 hover:border-bright-cyan/40 transition-all duration-200">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-white flex items-center">
-                <Code className="h-5 w-5 mr-2 text-blue-400" />
+              <CardTitle className="text-foreground flex items-center">
+                <Code className="h-5 w-5 mr-2 text-electric-blue" />
                 Gherkin Input
               </CardTitle>
-              <CardDescription className="text-slate-400">
+              <CardDescription className="text-muted-custom">
                 Paste your Gherkin scenarios to convert to Playwright automation
               </CardDescription>
             </div>
@@ -315,7 +315,7 @@ Requirements:
                 variant="outline"
                 size="sm"
                 onClick={clearGherkinInput}
-                className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                className="border-bright-cyan/30 text-bright-cyan hover:bg-bright-cyan hover:text-background"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -324,7 +324,7 @@ Requirements:
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="gherkin" className="text-white">Gherkin Scenarios</Label>
+            <Label htmlFor="gherkin" className="text-foreground">Gherkin Scenarios</Label>
             <Textarea
               id="gherkin"
               placeholder={`# URL: https://example.com
@@ -335,28 +335,29 @@ Feature: Login functionality
     Then I should be redirected to dashboard`}
               value={gherkinInput}
               onChange={(e) => setGherkinInput(e.target.value)}
-              className="bg-slate-700 border-slate-600 text-white mt-2 min-h-[300px] font-mono text-sm"
+              className="bg-dark-slate border-bright-cyan/30 text-foreground mt-2 min-h-[300px] font-mono text-sm focus:border-bright-cyan focus:glow-cyan transition-all duration-200"
             />
           </div>
           <Button 
             onClick={convertToPlaywright}
             disabled={!gherkinInput.trim() || isConverting}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+            variant="gradient"
+            className="w-full"
           >
             {isConverting ? "Converting..." : "Generate Playwright Code"}
           </Button>
         </CardContent>
       </Card>
 
-      <Card className="bg-slate-800 border-slate-700">
+      <Card className="bg-midnight-navy border-emerald-neon/20 hover:border-emerald-neon/40 transition-all duration-200">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-white flex items-center">
-                <Play className="h-5 w-5 mr-2 text-green-400" />
+              <CardTitle className="text-foreground flex items-center">
+                <Play className="h-5 w-5 mr-2 text-emerald-neon" />
                 Playwright Code
               </CardTitle>
-              <CardDescription className="text-slate-400">
+              <CardDescription className="text-muted-custom">
                 Generated automation script ready for execution
               </CardDescription>
             </div>
@@ -367,7 +368,7 @@ Feature: Login functionality
                     variant="outline"
                     size="sm"
                     onClick={copyCode}
-                    className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                    className="border-emerald-neon/30 text-emerald-neon hover:bg-emerald-neon hover:text-background"
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
@@ -375,7 +376,7 @@ Feature: Login functionality
                     variant="outline"
                     size="sm"
                     onClick={clearPlaywrightCode}
-                    className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                    className="border-emerald-neon/30 text-emerald-neon hover:bg-emerald-neon hover:text-background"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -389,13 +390,13 @@ Feature: Login functionality
             value={playwrightCode}
             onChange={(e) => handlePlaywrightCodeChange(e.target.value)}
             placeholder="Generated Playwright automation code will appear here..."
-            className="bg-slate-900 border-slate-600 text-blue-300 font-mono text-sm min-h-[320px] resize-none"
+            className="bg-dark-slate border-emerald-neon/30 text-sky-glow font-mono text-sm min-h-[320px] resize-none focus:border-emerald-neon focus:glow-emerald transition-all duration-200"
           />
           {playwrightCode && (
             <Button 
               onClick={runPlaywright}
               disabled={isRunning}
-              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+              className="w-full bg-emerald-neon text-background hover:bg-emerald-neon/90 hover:glow-emerald font-semibold transition-all duration-200"
             >
               <Play className="h-4 w-4 mr-2" />
               {isRunning ? "Running Playwright..." : "Run Playwright"}
