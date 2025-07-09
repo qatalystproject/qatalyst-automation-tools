@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -492,15 +491,15 @@ Feature: ${scenarioDesc}
                             </div>
                           ))}
                           
-                          {/* Data Rows */}
+                          {/* Data Rows - Show actual CSV data aligned with headers */}
                           {csvData.slice(1).map((row, rowIndex) => (
-                            row.map((cell, cellIndex) => (
+                            csvData[0].map((header, cellIndex) => (
                               <div 
                                 key={`cell-${rowIndex}-${cellIndex}`} 
                                 className="bg-slate-800/50 border border-slate-700 p-3 rounded text-slate-300 text-sm break-words"
-                                title={cell}
+                                title={row[cellIndex] || '-'}
                               >
-                                {cell || '-'}
+                                {row[cellIndex] || '-'}
                               </div>
                             ))
                           ))}
@@ -539,8 +538,7 @@ Feature: ${scenarioDesc}
               disabled={!generatedGherkin.trim()}
               className="border-slate-600 text-slate-300 hover:bg-slate-700"
             >
-              <Copy className="h-4 w-4 mr-2" />
-              Copy
+              <Copy className="h-4 w-4" />
             </Button>
             <Button
               onClick={clearGeneratedGherkin}
