@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -356,6 +357,20 @@ Feature: ${scenarioDesc}
     handleGherkinChange("");
   };
 
+  // Helper function to format multi-line content for display
+  const formatMultiLineContent = (content: string) => {
+    if (!content) return '-';
+    
+    // Split by common delimiters and clean up
+    const lines = content
+      .split(/[,;\n]|(?=\d+\.)/)
+      .map(line => line.trim())
+      .map(line => line.replace(/^\d+\.\s*/, ''))
+      .filter(line => line);
+    
+    return lines.length > 1 ? lines : [content];
+  };
+
   return (
     <div className="space-y-6">
       <Card className="bg-slate-800 border-slate-700">
@@ -493,15 +508,45 @@ Feature: ${scenarioDesc}
                           
                           {/* Data Rows - Show actual CSV data aligned with headers */}
                           {csvData.slice(1).map((row, rowIndex) => (
-                            csvData[0].map((header, cellIndex) => (
-                              <div 
-                                key={`cell-${rowIndex}-${cellIndex}`} 
-                                className="bg-slate-800/50 border border-slate-700 p-3 rounded text-slate-300 text-sm break-words"
-                                title={row[cellIndex] || '-'}
-                              >
-                                {row[cellIndex] || '-'}
-                              </div>
-                            ))
+                            csvData[0].map((header, cellIndex) => {
+                              const cellContent = row[cellIndex] || '-';
+                              const isTestSteps = header.trim() === 'Test Steps';
+                              const isExpectedResult = header.trim() === 'Expected Result';
+                              
+                              if (isTestSteps || isExpectedResult) {
+                                const formattedLines = formatMultiLineContent(cellContent);
+                                
+                                return (
+                                  <div 
+                                    key={`cell-${rowIndex}-${cellIndex}`} 
+                                    className="bg-slate-800/50 border border-slate-700 p-3 rounded text-slate-300 text-sm"
+                                    title={cellContent}
+                                  >
+                                    {Array.isArray(formattedLines) ? (
+                                      <div className="space-y-1">
+                                        {formattedLines.map((line, lineIndex) => (
+                                          <div key={lineIndex} className="break-words">
+                                            {lineIndex + 1}. {line}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <div className="break-words">{formattedLines}</div>
+                                    )}
+                                  </div>
+                                );
+                              }
+                              
+                              return (
+                                <div 
+                                  key={`cell-${rowIndex}-${cellIndex}`} 
+                                  className="bg-slate-800/50 border border-slate-700 p-3 rounded text-slate-300 text-sm break-words"
+                                  title={cellContent}
+                                >
+                                  {cellContent}
+                                </div>
+                              );
+                            })
                           ))}
                         </div>
                       </div>
