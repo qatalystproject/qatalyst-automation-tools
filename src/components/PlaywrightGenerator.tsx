@@ -70,6 +70,9 @@ const PlaywrightGenerator = ({
   };
 
   const generatePlaywrightCode = async (scenarioText: string, featureUrl: string) => {
+    console.log('🔑 API Key length:', apiKey ? apiKey.length : 0);
+    console.log('🌐 Making request to OpenAI API...');
+    
     const prompt = `
 You are a QA automation engineer.
 
@@ -87,25 +90,55 @@ Requirements:
 - Keep it in a single test() block for this scenario.
 `;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.2,
-      }),
-    });
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.2,
+        }),
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to generate Playwright code from OpenAI');
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        
+        let errorMessage = 'Failed to generate Playwright code from OpenAI';
+        
+        if (response.status === 401) {
+          errorMessage = 'Invalid OpenAI API key. Please check your authentication.';
+        } else if (response.status === 429) {
+          errorMessage = 'OpenAI API rate limit exceeded. Please try again later.';
+        } else if (response.status === 403) {
+          errorMessage = 'OpenAI API access forbidden. Check your API key permissions.';
+        } else if (response.status >= 500) {
+          errorMessage = 'OpenAI API server error. Please try again later.';
+        }
+        
+        throw new Error(`${errorMessage} (Status: ${response.status})`);
+      }
+
+      const data = await response.json();
+      console.log('✅ API Response received successfully');
+      
+      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        console.error('❌ Invalid API response structure:', data);
+        throw new Error('Invalid response structure from OpenAI API');
+      }
+      
+      return data.choices[0].message.content.trim();
+    } catch (error) {
+      console.error('❌ Full error details:', error);
+      throw error;
     }
-
-    const data = await response.json();
-    return data.choices[0].message.content.trim();
   };
 
   const convertToPlaywright = async () => {
