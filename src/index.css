@@ -56,6 +56,14 @@
     box-shadow: 0 0 20px rgba(26, 106, 255, 0.3);
   }
   
+  .glow-cyan {
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+  }
+  
+  .glow-emerald {
+    box-shadow: 0 0 15px rgba(0, 255, 179, 0.4);
+  }
+  
   .neon-border {
     border: 1px solid var(--bright-cyan);
     box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
@@ -67,8 +75,12 @@
   }
   
   .futuristic-input:focus {
-    @apply border-electric-blue;
+    @apply border-bright-cyan;
     box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+  }
+  
+  .gradient-accent {
+    background: var(--gradient-accent);
   }
 }
 

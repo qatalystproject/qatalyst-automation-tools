@@ -122,28 +122,20 @@ const Index = () => {
       <div className="border-b border-slate-700 bg-midnight-navy/50 backdrop-blur-sm">
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="relative h-16 w-16 rounded-xl overflow-hidden">
+            <div className="flex items-center space-x-6">
+              <div className="relative h-20 w-20 rounded-xl overflow-hidden">
                 <img 
-                  src="/lovable-uploads/6e90bcc4-e6cf-4651-b20f-95748717815c.png" 
+                  src="/lovable-uploads/184260d9-f282-4068-ae75-813ce04a399e.png" 
                   alt="QAtalyst Logo" 
                   className="h-full w-full object-contain"
                 />
-                {/* Logo overlay icons with glow effect */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="relative">
-                    <Cog className="h-6 w-6 text-electric-blue absolute top-1 left-1" style={{ filter: 'drop-shadow(0 0 4px #FFFFFF33)' }} />
-                    <Atom className="h-5 w-5 text-bright-cyan absolute top-2 right-1" style={{ filter: 'drop-shadow(0 0 4px #FFFFFF33)' }} />
-                    <Zap className="h-4 w-4 text-emerald-neon absolute bottom-1 right-2" style={{ filter: 'drop-shadow(0 0 4px #FFFFFF33)' }} />
-                  </div>
-                </div>
               </div>
               <div>
-                <h1 className="text-4xl font-bold font-sans">
+                <h1 className="text-5xl font-bold font-sans">
                   <span className="text-bright-cyan" style={{ color: '#00F0FF' }}>QA</span>
                   <span className="text-[#5BC0FF]">talyst</span>
                 </h1>
-                <p className="text-lg text-secondary-text font-medium">Test Smarter. Ship Faster.</p>
+                <p className="text-xl text-secondary-text font-medium">Test Smarter. Ship Faster.</p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -182,7 +174,7 @@ const Index = () => {
                 <Play className="h-4 w-4 mr-2" />
                 Execute
               </TabsTrigger>
-              <TabsTrigger value="export" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-electric-blue data-[state=active]:to-bright-cyan data-[state=active]:text-white">
+              <TabsTrigger value="export" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-electric-blue data-[state=active]:to-bright-cyan data-[state=state=active]:text-white">
                 <GitBranch className="h-4 w-4 mr-2" />
                 Export
               </TabsTrigger>
