@@ -1,199 +1,107 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* QAtalyst Futuristic UI Color Palette */
-
-@layer base {
-  :root {
-    /* Background & Base */
-    --background: 210 46% 10%;  /* Dark Slate #0C1B29 */
-    --foreground: 210 14% 97%;  /* Primary Text #F1F5F9 */
-
-    --card: 210 46% 12%;        /* Slightly lighter than background */
-    --card-foreground: 210 14% 97%;
-
-    --popover: 210 46% 10%;
-    --popover-foreground: 210 14% 97%;
-
-    /* Primary / Action Colors */
-    --primary: 220 100% 55%;    /* Electric Blue #1A6AFF */
-    --primary-foreground: 210 14% 97%;
-
-    --secondary: 210 46% 15%;   /* Darker variant for secondary elements */
-    --secondary-foreground: 210 14% 97%;
-
-    /* Muted colors for subtle elements */
-    --muted: 210 46% 15%;
-    --muted-foreground: 214 16% 57%; /* Secondary Text #94A3B8 */
-
-    /* Accent colors */
-    --accent: 180 100% 50%;     /* Bright Cyan #00F0FF */
-    --accent-foreground: 210 46% 10%;
-
-    /* Success/Interactive */
-    --success: 153 100% 50%;    /* Emerald Neon #00FFB3 */
-    --success-foreground: 210 46% 10%;
-
-    /* Destructive (keeping red for errors) */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 14% 97%;
-
-    /* Border and Input */
-    --border: 210 46% 20%;
-    --input: 210 46% 15%;
-    --ring: 180 100% 50%;       /* Bright Cyan for focus rings */
-
-    --radius: 0.5rem;
-
-    /* Sidebar colors - Midnight Navy */
-    --sidebar-background: 210 50% 8%;  /* Midnight Navy #0A192F */
-    --sidebar-foreground: 210 14% 97%;
-    --sidebar-primary: 220 100% 55%;
-    --sidebar-primary-foreground: 210 14% 97%;
-    --sidebar-accent: 210 46% 15%;
-    --sidebar-accent-foreground: 210 14% 97%;
-    --sidebar-border: 210 46% 20%;
-    --sidebar-ring: 180 100% 50%;
-
-    /* Custom futuristic colors */
-    --electric-blue: 220 100% 55%;     /* #1A6AFF */
-    --bright-cyan: 180 100% 50%;       /* #00F0FF */
-    --sky-glow: 185 100% 74%;          /* #7EEFFF */
-    --emerald-neon: 153 100% 50%;      /* #00FFB3 */
-    --aqua-green: 153 73% 53%;         /* #34D399 */
-    --teal-glow: 179 92% 44%;          /* #0ED3CF */
-    --indigo-glow: 240 78% 68%;        /* #6366F1 */
-    --soft-purple: 249 76% 76%;        /* #A78BFA */
-    --muted-text: 215 20% 65%;         /* #94A3B8 */
-    --inactive-text: 215 25% 47%;      /* #64748B */
-  }
-
-  .dark {
-    /* Keep the same colors for dark mode as they're already dark themed */
-    --background: 210 46% 10%;
-    --foreground: 210 14% 97%;
-
-    --card: 210 46% 12%;
-    --card-foreground: 210 14% 97%;
-
-    --popover: 210 46% 10%;
-    --popover-foreground: 210 14% 97%;
-
-    --primary: 220 100% 55%;
-    --primary-foreground: 210 14% 97%;
-
-    --secondary: 210 46% 15%;
-    --secondary-foreground: 210 14% 97%;
-
-    --muted: 210 46% 15%;
-    --muted-foreground: 214 16% 57%;
-
-    --accent: 180 100% 50%;
-    --accent-foreground: 210 46% 10%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 14% 97%;
-
-    --border: 210 46% 20%;
-    --input: 210 46% 15%;
-    --ring: 180 100% 50%;
-
-    --sidebar-background: 210 50% 8%;
-    --sidebar-foreground: 210 14% 97%;
-    --sidebar-primary: 220 100% 55%;
-    --sidebar-primary-foreground: 210 14% 97%;
-    --sidebar-accent: 210 46% 15%;
-    --sidebar-accent-foreground: 210 14% 97%;
-    --sidebar-border: 210 46% 20%;
-    --sidebar-ring: 180 100% 50%;
-  }
+:root {
+  /* QAtalyst Futuristic Color Palette */
+  /* Background & Base */
+  --dark-slate: #0C1B29;
+  --midnight-navy: #0A192F;
+  --dark-gradient: linear-gradient(180deg, #0D1C2F 0%, #000814 100%);
+  
+  /* Primary / Action */
+  --electric-blue: #1A6AFF;
+  --bright-cyan: #00F0FF;
+  --sky-glow: #7EEFFF;
+  
+  /* Secondary / Success / Interactive */
+  --emerald-neon: #00FFB3;
+  --aqua-green: #34D399;
+  --teal-glow: #0ED3CF;
+  
+  /* Text & Font */
+  --primary-text: #F1F5F9;
+  --secondary-text: #94A3B8;
+  --muted-text: #64748B;
+  
+  /* Accent / Optional Nuansa */
+  --indigo-glow: #6366F1;
+  --soft-purple: #A78BFA;
+  --gradient-accent: linear-gradient(to right, #00F0FF, #00FFB3);
 }
 
 @layer base {
   * {
     @apply border-border;
   }
-
+  
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', 'DM Sans', 'Space Grotesk', system-ui, sans-serif;
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
-
-  /* Code elements */
+  
   code, pre {
-    font-family: 'Fira Code', 'JetBrains Mono', 'Source Code Pro', monospace;
-  }
-}
-
-/* Custom utility classes for the futuristic theme */
-@layer utilities {
-  .bg-dark-slate {
-    background-color: hsl(210 46% 10%);
-  }
-  
-  .bg-midnight-navy {
-    background-color: hsl(210 50% 8%);
-  }
-  
-  .bg-electric-blue {
-    background-color: hsl(var(--electric-blue));
-  }
-  
-  .bg-bright-cyan {
-    background-color: hsl(var(--bright-cyan));
-  }
-  
-  .bg-emerald-neon {
-    background-color: hsl(var(--emerald-neon));
-  }
-  
-  .text-electric-blue {
-    color: hsl(var(--electric-blue));
-  }
-  
-  .text-bright-cyan {
-    color: hsl(var(--bright-cyan));
-  }
-  
-  .text-emerald-neon {
-    color: hsl(var(--emerald-neon));
-  }
-  
-  .text-sky-glow {
-    color: hsl(var(--sky-glow));
-  }
-  
-  .text-muted-custom {
-    color: hsl(var(--muted-text));
-  }
-  
-  .text-inactive {
-    color: hsl(var(--inactive-text));
-  }
-  
-  .border-bright-cyan {
-    border-color: hsl(var(--bright-cyan));
-  }
-  
-  .border-emerald-neon {
-    border-color: hsl(var(--emerald-neon));
-  }
-  
-  .glow-cyan {
-    box-shadow: 0 0 20px hsla(var(--bright-cyan), 0.3);
-  }
-  
-  .glow-emerald {
-    box-shadow: 0 0 20px hsla(var(--emerald-neon), 0.3);
-  }
-  
-  .gradient-accent {
-    background: linear-gradient(to right, hsl(var(--bright-cyan)), hsl(var(--emerald-neon)));
+    font-family: 'Fira Code', 'Courier New', monospace;
   }
   
   .gradient-bg {
-    background: linear-gradient(180deg, hsl(210 50% 9%) 0%, hsl(220 100% 3%) 100%);
+    background: var(--dark-gradient);
+  }
+}
+
+@layer components {
+  .glow-effect {
+    box-shadow: 0 0 20px rgba(26, 106, 255, 0.3);
+  }
+  
+  .neon-border {
+    border: 1px solid var(--bright-cyan);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+  }
+  
+  .futuristic-input {
+    @apply bg-dark-slate border-slate-600 text-primary-text;
+    transition: all 0.3s ease;
+  }
+  
+  .futuristic-input:focus {
+    @apply border-electric-blue;
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+  }
+}
+
+@layer utilities {
+  .dark-slate {
+    color: var(--dark-slate);
+  }
+  
+  .midnight-navy {
+    color: var(--midnight-navy);
+  }
+  
+  .electric-blue {
+    color: var(--electric-blue);
+  }
+  
+  .bright-cyan {
+    color: var(--bright-cyan);
+  }
+  
+  .emerald-neon {
+    color: var(--emerald-neon);
+  }
+  
+  .primary-text {
+    color: var(--primary-text);
+  }
+  
+  .secondary-text {
+    color: var(--secondary-text);
+  }
+  
+  .muted-text {
+    color: var(--muted-text);
   }
 }

@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -24,6 +25,22 @@ export default {
 				ring: 'hsl(var(--ring))',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
+				
+				// QAtalyst Futuristic Color Palette
+				'dark-slate': '#0C1B29',
+				'midnight-navy': '#0A192F',
+				'electric-blue': '#1A6AFF',
+				'bright-cyan': '#00F0FF',
+				'sky-glow': '#7EEFFF',
+				'emerald-neon': '#00FFB3',
+				'aqua-green': '#34D399',
+				'teal-glow': '#0ED3CF',
+				'primary-text': '#F1F5F9',
+				'secondary-text': '#94A3B8',
+				'muted-text': '#64748B',
+				'indigo-glow': '#6366F1',
+				'soft-purple': '#A78BFA',
+				
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'
@@ -62,6 +79,10 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				}
+			},
+			fontFamily: {
+				'sans': ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+				'mono': ['Fira Code', 'Courier New', 'monospace'],
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
