@@ -27,7 +27,7 @@ const Footer = () => {
   const currentContent = content[language as keyof typeof content];
 
   return (
-    <footer className="bg-midnight-navy border-t border-slate-700 mt-16">
+    <footer className="border-t border-slate-700 mt-16" style={{ backgroundColor: '#0A192F' }}>
       <div className="container mx-auto px-6 py-8">
         <div className="flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
           {/* About Us Section */}
@@ -36,22 +36,23 @@ const Footer = () => {
               <DialogTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  className="text-secondary-text hover:text-electric-blue hover:bg-dark-slate transition-colors"
+                  className="hover:text-bright-cyan transition-colors"
+                  style={{ color: '#F1F5F9' }}
                 >
                   {currentContent.aboutUs}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px] bg-midnight-navy border-slate-700">
+              <DialogContent className="sm:max-w-[600px] border-slate-700" style={{ backgroundColor: '#0A192F' }}>
                 <DialogHeader>
-                  <DialogTitle className="text-primary-text text-xl">
+                  <DialogTitle className="text-xl" style={{ color: '#F1F5F9' }}>
                     {currentContent.aboutUs}
                   </DialogTitle>
-                  <DialogDescription className="text-secondary-text">
+                  <DialogDescription style={{ color: '#64748B' }}>
                     {currentContent.aboutDescription}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="mt-4">
-                  <p className="text-primary-text leading-relaxed">
+                  <p className="leading-relaxed" style={{ color: '#F1F5F9' }}>
                     {currentContent.aboutContent}
                   </p>
                 </div>
@@ -60,11 +61,12 @@ const Footer = () => {
 
             {/* Language Switcher */}
             <div className="flex items-center space-x-2">
-              <Globe className="h-4 w-4 text-secondary-text" />
+              <Globe className="h-4 w-4" style={{ color: '#5BC0FF' }} />
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="bg-dark-slate border border-slate-600 text-primary-text text-sm rounded px-2 py-1 focus:outline-none focus:border-electric-blue"
+                className="bg-dark-slate border border-slate-600 text-sm rounded px-2 py-1 focus:outline-none focus:border-bright-cyan"
+                style={{ backgroundColor: '#0C1B29', color: '#F1F5F9' }}
               >
                 <option value="en">English</option>
                 <option value="id">Bahasa Indonesia</option>
@@ -74,13 +76,14 @@ const Footer = () => {
 
           {/* Social Media Links */}
           <div className="flex items-center space-x-6">
-            <span className="text-secondary-text text-sm">{currentContent.socialMedia}:</span>
+            <span className="text-sm" style={{ color: '#64748B' }}>{currentContent.socialMedia}:</span>
             <div className="flex space-x-4">
               <a
                 href="https://www.linkedin.com/in/ananta-widy"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-secondary-text hover:text-electric-blue transition-colors"
+                className="transition-colors hover:text-bright-cyan"
+                style={{ color: '#5BC0FF' }}
                 aria-label="LinkedIn"
               >
                 <Linkedin className="h-5 w-5" />
@@ -89,7 +92,8 @@ const Footer = () => {
                 href="https://github.com/anantawidy/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-secondary-text hover:text-electric-blue transition-colors"
+                className="transition-colors hover:text-bright-cyan"
+                style={{ color: '#5BC0FF' }}
                 aria-label="GitHub"
               >
                 <Github className="h-5 w-5" />
@@ -98,7 +102,8 @@ const Footer = () => {
                 href="https://medium.com/@anantawidy"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-secondary-text hover:text-electric-blue transition-colors"
+                className="transition-colors hover:text-bright-cyan"
+                style={{ color: '#5BC0FF' }}
                 aria-label="Medium"
               >
                 <BookOpen className="h-5 w-5" />
@@ -109,7 +114,7 @@ const Footer = () => {
 
         {/* Copyright */}
         <div className="mt-8 pt-6 border-t border-slate-700 text-center">
-          <p className="text-muted-text text-sm">
+          <p className="text-sm" style={{ color: '#64748B' }}>
             {currentContent.copyright}
           </p>
         </div>
