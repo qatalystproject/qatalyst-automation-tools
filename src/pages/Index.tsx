@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, Play, Settings, FileText, Download, GitBranch, Atom, Zap, Cog } from "lucide-react";
+import { Upload, Play, Settings, FileText, Download, GitBranch, Atom, Zap, Cog, Globe } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import AuthenticationCard from "@/components/AuthenticationCard";
 import GherkinGenerator from "@/components/GherkinGenerator";
 import PlaywrightGenerator from "@/components/PlaywrightGenerator";
@@ -26,13 +27,14 @@ const Index = () => {
   const [successPercentage, setSuccessPercentage] = useState(0);
   const [isHeadlessMode, setIsHeadlessMode] = useState(true);
   const { toast } = useToast();
+  const { language, setLanguage, t } = useLanguage();
 
   const handleAuthentication = (key: string) => {
     setOpenaiKey(key);
     setIsAuthenticated(true);
     toast({
-      title: "Authentication Success",
-      description: "OpenAI API Key has been configured successfully.",
+      title: t('authSuccess'),
+      description: t('authSuccessDesc'),
     });
   };
 
@@ -123,7 +125,7 @@ const Index = () => {
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-6">
-              <div className="relative h-20 w-20 rounded-xl overflow-hidden">
+              <div className="relative h-24 w-24 rounded-xl overflow-hidden">
                 <img 
                   src="/lovable-uploads/184260d9-f282-4068-ae75-813ce04a399e.png" 
                   alt="QAtalyst Logo" 
@@ -131,18 +133,31 @@ const Index = () => {
                 />
               </div>
               <div>
-                <h1 className="text-5xl font-bold font-sans">
+                <h1 className="text-6xl font-bold">
                   <span className="text-bright-cyan" style={{ color: '#00F0FF' }}>QA</span>
                   <span className="text-[#5BC0FF]">talyst</span>
                 </h1>
-                <p className="text-xl text-secondary-text font-medium">Test Smarter. Ship Faster.</p>
+                <p className="text-2xl text-secondary font-medium">{t('tagline')}</p>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-4">
+              {/* Language Switcher */}
+              <div className="flex items-center space-x-2">
+                <Globe className="h-4 w-4 text-[#5BC0FF]" />
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as 'en' | 'id')}
+                  className="bg-dark-slate border border-slate-600 text-sm rounded px-2 py-1 focus:outline-none focus:border-bright-cyan text-primary"
+                  style={{ backgroundColor: '#0C1B29' }}
+                >
+                  <option value="en">English</option>
+                  <option value="id">Bahasa Indonesia</option>
+                </select>
+              </div>
               {isAuthenticated && (
                 <div className="flex items-center space-x-2 text-sm text-emerald-neon">
                   <div className="h-2 w-2 rounded-full bg-emerald-neon animate-pulse"></div>
-                  <span>API Connected</span>
+                  <span>{t('apiConnected')}</span>
                 </div>
               )}
             </div>
@@ -160,23 +175,23 @@ const Index = () => {
             <TabsList className="grid w-full grid-cols-5 bg-midnight-navy border-slate-700">
               <TabsTrigger value="generator" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-electric-blue data-[state=active]:to-bright-cyan data-[state=active]:text-white">
                 <FileText className="h-4 w-4 mr-2" />
-                Generator
+                {t('generator')}
               </TabsTrigger>
               <TabsTrigger value="playwright" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-electric-blue data-[state=active]:to-bright-cyan data-[state=active]:text-white">
                 <Play className="h-4 w-4 mr-2" />
-                Playwright
+                {t('playwright')}
               </TabsTrigger>
               <TabsTrigger value="management" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-electric-blue data-[state=active]:to-bright-cyan data-[state=active]:text-white">
                 <Settings className="h-4 w-4 mr-2" />
-                Test Cases
+                {t('testCases')}
               </TabsTrigger>
               <TabsTrigger value="execution" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-electric-blue data-[state=active]:to-bright-cyan data-[state=active]:text-white">
                 <Play className="h-4 w-4 mr-2" />
-                Execute
+                {t('execute')}
               </TabsTrigger>
-              <TabsTrigger value="export" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-electric-blue data-[state=active]:to-bright-cyan data-[state=state=active]:text-white">
+              <TabsTrigger value="export" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-electric-blue data-[state=active]:to-bright-cyan data-[state=active]:text-white">
                 <GitBranch className="h-4 w-4 mr-2" />
-                Export
+                {t('export')}
               </TabsTrigger>
             </TabsList>
 

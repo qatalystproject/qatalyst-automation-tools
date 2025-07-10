@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play, Square, RotateCcw, CheckCircle, XCircle, Clock, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface TestResult {
   id: string;
@@ -32,14 +33,22 @@ const ExecutionEngine = ({
   testCases = []
 }: ExecutionEngineProps) => {
   const [isRunning, setIsRunning] = useState(false);
-  const [testResults, setTestResults] = useState<TestResult[]>(executionResults);
-  
+  const [testResults, setTestResults] = useState<TestResult[]>([]);
+  const { t } = useLanguage();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (executionResults.length > 0) {
-      setTestResults(executionResults);
-    }
+    // Remove duplicates and only show tests that were actually run
+    const uniqueResults = executionResults.filter((result, index, self) => 
+      index === self.findIndex(r => r.name === result.name && r.id === result.id)
+    );
+    
+    // Only show results for tests that have been executed (not pending)
+    const executedResults = uniqueResults.filter(result => 
+      result.status !== "pending" || result.duration !== ""
+    );
+    
+    setTestResults(executedResults);
   }, [executionResults]);
 
   const simulateVisibleExecution = async (testName: string) => {
@@ -66,24 +75,18 @@ const ExecutionEngine = ({
     
     if (activeTestCases.length === 0) {
       toast({
-        title: "No Active Tests Available",
-        description: "Please ensure you have active test cases to execute.",
+        title: t('noActiveTests'),
+        description: t('noActiveTestsDesc'),
         variant: "destructive",
       });
       return;
     }
     
-    // Filter test results to only include active ones based on testCases
-    const activeTestResults = testResults.filter(test => {
-      const correspondingTestCase = testCases.find(tc => tc.name === test.name);
-      return correspondingTestCase && correspondingTestCase.status === "active";
-    });
-    
     setIsRunning(true);
     
     toast({
-      title: "Running Active Tests",
-      description: `Executing ${activeTestCases.length} active test case(s) in headless mode. Archived tests are skipped.`,
+      title: t('runningActiveTests'),
+      description: `${t('runningActiveTests')} ${activeTestCases.length} ${t('runningActiveTests').toLowerCase()}`,
     });
     
     const updatedResults = [...testResults];
@@ -142,8 +145,8 @@ const ExecutionEngine = ({
     onExecutionResults?.(updatedResults, newSuccessPercentage);
     
     toast({
-      title: "Test Execution Complete",
-      description: `${activeResults.length} active test case(s) executed. Success rate: ${newSuccessPercentage}%`,
+      title: t('testExecutionComplete'),
+      description: `${activeResults.length} ${t('testExecutionComplete').toLowerCase()}. ${t('successRate')}: ${newSuccessPercentage}%`,
     });
   };
 
@@ -155,8 +158,8 @@ const ExecutionEngine = ({
     setTestResults(stoppedResults);
     
     toast({
-      title: "Tests Stopped",
-      description: "Test execution has been stopped.",
+      title: t('testsStopped'),
+      description: t('testsStoppedDesc'),
     });
   };
 
@@ -167,8 +170,8 @@ const ExecutionEngine = ({
       
     if (failedIndices.length === 0) {
       toast({
-        title: "No Failed Tests",
-        description: "There are no failed tests to rerun.",
+        title: t('noFailedTests'),
+        description: t('noFailedTestsDesc'),
       });
       return;
     }
@@ -176,8 +179,8 @@ const ExecutionEngine = ({
     setIsRunning(true);
     
     toast({
-      title: "Rerunning Failed Tests",
-      description: `Rerunning ${failedIndices.length} failed test(s) in headless mode.`,
+      title: t('rerunningFailedTests'),
+      description: `${t('rerunningFailedTests')} ${failedIndices.length} ${t('rerunningFailedTests').toLowerCase()}`,
     });
 
     const updatedResults = [...testResults];
@@ -214,8 +217,8 @@ const ExecutionEngine = ({
     onExecutionResults?.(updatedResults, newSuccessPercentage);
     
     toast({
-      title: "Rerun Complete",
-      description: `Failed tests rerun completed. New success rate: ${newSuccessPercentage}%`,
+      title: t('rerunComplete'),
+      description: `${t('rerunComplete')}. ${t('successRate')}: ${newSuccessPercentage}%`,
     });
   };
 
@@ -241,7 +244,7 @@ const ExecutionEngine = ({
   // Calculate summary statistics - read archived count from testCases
   const passedCount = testResults.filter(t => t.status === "passed").length;
   const failedCount = testResults.filter(t => t.status === "failed").length;
-  const archivedCount = testCases.filter(tc => tc.status === "archived").length; // Read from testCases prop
+  const archivedCount = testCases.filter(tc => tc.status === "archived").length;
   const runningCount = testResults.filter(t => t.status === "running").length;
   const totalTests = testResults.length;
   const currentSuccessRate = totalTests > 0 ? Math.round((passedCount / totalTests) * 100) : successPercentage;
@@ -251,25 +254,25 @@ const ExecutionEngine = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader>
-            <CardTitle className="text-white flex items-center">
+            <CardTitle className="text-primary flex items-center">
               <Info className="h-5 w-5 mr-2 text-blue-400" />
-              Execution Mode
+              {t('executionMode')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center space-x-2 p-3 bg-slate-700 rounded-lg">
               <div className="h-2 w-2 rounded-full bg-blue-400"></div>
-              <span className="text-white font-medium">Headless Mode</span>
+              <span className="text-primary font-medium">{t('headlessMode')}</span>
             </div>
-            <div className="text-xs text-slate-400 mt-2">
-              Tests run in the background without opening browser windows for faster execution. Only active test cases will be executed.
+            <div className="text-xs text-muted mt-2">
+              {t('headlessDescription')}
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader>
-            <CardTitle className="text-white">Quick Actions</CardTitle>
+            <CardTitle className="text-primary">{t('quickActions')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {!isRunning ? (
@@ -279,7 +282,7 @@ const ExecutionEngine = ({
                 className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
               >
                 <Play className="h-4 w-4 mr-2" />
-                Run Active Tests (Headless)
+                {t('runActiveTests')}
               </Button>
             ) : (
               <Button 
@@ -288,47 +291,47 @@ const ExecutionEngine = ({
                 className="w-full"
               >
                 <Square className="h-4 w-4 mr-2" />
-                Stop Tests
+                {t('stopTests')}
               </Button>
             )}
             <Button 
               onClick={rerunFailedTests}
               disabled={failedCount === 0 || isRunning}
               variant="outline"
-              className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
+              className="w-full border-slate-600 text-secondary hover:bg-slate-700"
             >
               <RotateCcw className="h-4 w-4 mr-2" />
-              Rerun Failed ({failedCount})
+              {t('rerunFailed')} ({failedCount})
             </Button>
           </CardContent>
         </Card>
 
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader>
-            <CardTitle className="text-white">Test Summary</CardTitle>
+            <CardTitle className="text-primary">{t('testSummary')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <div className="text-center">
                 <div className="text-3xl font-bold text-blue-400">{currentSuccessRate}%</div>
-                <div className="text-sm text-slate-300">Success Rate</div>
+                <div className="text-sm text-secondary">{t('successRate')}</div>
               </div>
               <div className="grid grid-cols-2 gap-2 text-center">
                 <div className="p-2 bg-green-600/20 rounded">
                   <div className="text-lg font-bold text-green-400">{passedCount}</div>
-                  <div className="text-xs text-green-300">Passed</div>
+                  <div className="text-xs text-green-300">{t('passed')}</div>
                 </div>
                 <div className="p-2 bg-red-600/20 rounded">
                   <div className="text-lg font-bold text-red-400">{failedCount}</div>
-                  <div className="text-xs text-red-300">Failed</div>
+                  <div className="text-xs text-red-300">{t('failed')}</div>
                 </div>
                 <div className="p-2 bg-slate-600/20 rounded">
                   <div className="text-lg font-bold text-slate-400">{archivedCount}</div>
-                  <div className="text-xs text-slate-300">Archived</div>
+                  <div className="text-xs text-muted">{t('archived')}</div>
                 </div>
                 <div className="p-2 bg-yellow-600/20 rounded">
                   <div className="text-lg font-bold text-yellow-400">{runningCount}</div>
-                  <div className="text-xs text-yellow-300">Running</div>
+                  <div className="text-xs text-yellow-300">{t('running')}</div>
                 </div>
               </div>
             </div>
@@ -338,9 +341,9 @@ const ExecutionEngine = ({
 
       <Card className="bg-slate-800 border-slate-700">
         <CardHeader>
-          <CardTitle className="text-white">Test Results</CardTitle>
-          <CardDescription className="text-slate-400">
-            Execution results from Playwright tests ({testResults.length} tests, only active test cases executed)
+          <CardTitle className="text-primary">{t('testResults')}</CardTitle>
+          <CardDescription className="text-secondary">
+            {t('testResultsDescription')} ({testResults.length} tests)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -350,15 +353,15 @@ const ExecutionEngine = ({
                 <div className="flex items-center space-x-3">
                   {getStatusIcon(result.status)}
                   <div>
-                    <h4 className="text-white font-medium">{result.name}</h4>
-                    <p className="text-sm text-slate-400">{result.details}</p>
+                    <h4 className="text-primary font-medium">{result.name}</h4>
+                    <p className="text-sm text-secondary">{result.details}</p>
                     {result.status === "failed" && result.error && (
                       <p className="text-sm text-red-400 mt-1">Error: {result.error}</p>
                     )}
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <span className="text-sm text-slate-400">{result.duration}</span>
+                  <span className="text-sm text-secondary">{result.duration}</span>
                   <Badge className={`${getStatusColor(result.status)} text-white`}>
                     {result.status}
                   </Badge>
@@ -370,8 +373,8 @@ const ExecutionEngine = ({
           {testResults.length === 0 && (
             <div className="text-center py-8">
               <Clock className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">No Test Results</h3>
-              <p className="text-slate-400">Test results will appear here after running Playwright tests.</p>
+              <h3 className="text-lg font-semibold text-primary mb-2">{t('noTestResults')}</h3>
+              <p className="text-secondary">{t('noTestResultsDescription')}</p>
             </div>
           )}
         </CardContent>
