@@ -27,15 +27,15 @@ const AuthenticationCard = ({ onAuthenticate }: AuthenticationCardProps) => {
         <div className="mx-auto mb-4 h-12 w-12 rounded-full gradient-accent flex items-center justify-center glow-emerald">
           <Key className="h-6 w-6 text-background" />
         </div>
-        <CardTitle className="text-primary-text">OpenAI Authentication</CardTitle>
-        <CardDescription className="text-secondary-text">
+        <CardTitle className="text-foreground">OpenAI Authentication</CardTitle>
+        <CardDescription className="text-muted-custom">
           Enter your OpenAI API key to start generating test automation scripts
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="apiKey" className="text-primary-text">API Key</Label>
+            <Label htmlFor="apiKey" className="text-foreground">API Key</Label>
             <div className="relative">
               <Input
                 id="apiKey"
@@ -43,14 +43,14 @@ const AuthenticationCard = ({ onAuthenticate }: AuthenticationCardProps) => {
                 placeholder="sk-..."
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                className="bg-dark-slate border-bright-cyan/30 text-primary-text pr-10 focus:border-bright-cyan focus:glow-cyan transition-all duration-200"
+                className="bg-dark-slate border-bright-cyan/30 text-foreground pr-10 focus:border-bright-cyan focus:glow-cyan transition-all duration-200"
                 required
               />
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 h-auto text-secondary-text hover:text-bright-cyan"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 h-auto text-muted-custom hover:text-bright-cyan"
                 onClick={() => setShowKey(!showKey)}
               >
                 {showKey ? (
@@ -70,7 +70,7 @@ const AuthenticationCard = ({ onAuthenticate }: AuthenticationCardProps) => {
             Connect API
           </Button>
         </form>
-        <div className="mt-4 text-xs text-muted-text text-center">
+        <div className="mt-4 text-xs text-inactive text-center">
           Your API key is stored locally and never sent to our servers
         </div>
       </CardContent>

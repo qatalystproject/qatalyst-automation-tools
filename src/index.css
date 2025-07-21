@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500&family=JetBrains+Mono:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -38,29 +38,16 @@
   }
   
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', 'DM Sans', 'Space Grotesk', system-ui, -apple-system, sans-serif;
-    color: #F1F5F9;
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
   
   code, pre {
-    font-family: 'Fira Code', 'JetBrains Mono', 'Source Code Pro', 'Courier New', monospace;
+    font-family: 'Fira Code', 'Courier New', monospace;
   }
   
   .gradient-bg {
     background: var(--dark-gradient);
-  }
-  
-  h1, h2, h3, h4, h5, h6 {
-    color: #F1F5F9;
-  }
-  
-  p {
-    color: #94A3B8;
-  }
-  
-  .text-muted {
-    color: #64748B;
   }
 }
 
@@ -69,45 +56,52 @@
     box-shadow: 0 0 20px rgba(26, 106, 255, 0.3);
   }
   
-  .glow-cyan {
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
-  }
-  
-  .glow-emerald {
-    box-shadow: 0 0 15px rgba(0, 255, 179, 0.4);
-  }
-  
   .neon-border {
     border: 1px solid var(--bright-cyan);
     box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
   }
   
   .futuristic-input {
-    @apply bg-dark-slate border-slate-600;
-    color: #F1F5F9;
+    @apply bg-dark-slate border-slate-600 text-primary-text;
     transition: all 0.3s ease;
   }
   
   .futuristic-input:focus {
-    @apply border-bright-cyan;
+    @apply border-electric-blue;
     box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
-  }
-  
-  .gradient-accent {
-    background: var(--gradient-accent);
   }
 }
 
 @layer utilities {
-  .text-primary {
-    color: #F1F5F9;
+  .dark-slate {
+    color: var(--dark-slate);
   }
   
-  .text-secondary {
-    color: #94A3B8;
+  .midnight-navy {
+    color: var(--midnight-navy);
   }
   
-  .text-muted {
-    color: #64748B;
+  .electric-blue {
+    color: var(--electric-blue);
+  }
+  
+  .bright-cyan {
+    color: var(--bright-cyan);
+  }
+  
+  .emerald-neon {
+    color: var(--emerald-neon);
+  }
+  
+  .primary-text {
+    color: var(--primary-text);
+  }
+  
+  .secondary-text {
+    color: var(--secondary-text);
+  }
+  
+  .muted-text {
+    color: var(--muted-text);
   }
 }
