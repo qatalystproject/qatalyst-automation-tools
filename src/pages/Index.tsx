@@ -24,6 +24,7 @@ const Index = () => {
   const [executionResults, setExecutionResults] = useState<any[]>([]);
   const [successPercentage, setSuccessPercentage] = useState(0);
   const [isHeadlessMode, setIsHeadlessMode] = useState(true);
+  const [runningTestCases, setRunningTestCases] = useState<string[]>([]);
   const { toast } = useToast();
 
   const handleAuthentication = (key: string) => {
@@ -107,6 +108,40 @@ const Index = () => {
   const handleExecutionResultsUpdate = (results: any[], percentage: number) => {
     setExecutionResults(results);
     setSuccessPercentage(percentage);
+  };
+
+  const handleRunSelectedTests = (selectedTestIds: string[]) => {
+    const selectedTests = testCases.filter(tc => selectedTestIds.includes(tc.id) && tc.status === "active");
+    
+    if (selectedTests.length === 0) {
+      toast({
+        title: "No Active Tests Selected",
+        description: "Please select active test cases to run.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create test results for selected tests
+    const testResults = selectedTests.map(testCase => ({
+      id: testCase.id,
+      name: testCase.name,
+      status: "pending" as const,
+      duration: "0s",
+      details: "Waiting to run",
+      type: testCase.type
+    }));
+
+    setExecutionResults(testResults);
+    setRunningTestCases(selectedTestIds);
+    
+    // Auto-navigate to Execute tab
+    setActiveTab("execution");
+    
+    toast({
+      title: "Tests Queued",
+      description: `${selectedTests.length} test case(s) queued for execution.`,
+    });
   };
 
   const handleNavigateToGenerator = () => {
@@ -200,6 +235,7 @@ const Index = () => {
                 testCases={testCases} 
                 onTestCasesChange={setTestCases}
                 onNavigateToGenerator={handleNavigateToGenerator}
+                onRunSelectedTests={handleRunSelectedTests}
               />
             </TabsContent>
 
@@ -211,6 +247,7 @@ const Index = () => {
                 onHeadlessModeChange={setIsHeadlessMode}
                 onExecutionResults={handleExecutionResultsUpdate}
                 testCases={testCases}
+                runningTestCases={runningTestCases}
               />
             </TabsContent>
 

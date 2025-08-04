@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FileText, Edit, Trash2, Plus, Search, Save, Check, Archive } from "lucide-react";
+import { FileText, Edit, Trash2, Plus, Search, Save, Check, Archive, Play } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface TestCase {
@@ -25,9 +25,10 @@ interface TestCaseManagerProps {
   testCases: TestCase[];
   onTestCasesChange: (testCases: TestCase[]) => void;
   onNavigateToGenerator: () => void;
+  onRunSelectedTests?: (selectedTestIds: string[]) => void;
 }
 
-const TestCaseManager = ({ testCases, onTestCasesChange, onNavigateToGenerator }: TestCaseManagerProps) => {
+const TestCaseManager = ({ testCases, onTestCasesChange, onNavigateToGenerator, onRunSelectedTests }: TestCaseManagerProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingTestCase, setEditingTestCase] = useState<TestCase | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -132,6 +133,34 @@ const TestCaseManager = ({ testCases, onTestCasesChange, onNavigateToGenerator }
     });
   };
 
+  const handleRunSelectedTests = () => {
+    if (selectedTestCases.length === 0) {
+      toast({
+        title: "No Tests Selected",
+        description: "Please select test cases to run.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const activeSelectedTests = selectedTestCases.filter(id => {
+      const testCase = testCases.find(tc => tc.id === id);
+      return testCase && testCase.status === "active";
+    });
+
+    if (activeSelectedTests.length === 0) {
+      toast({
+        title: "No Active Tests Selected",
+        description: "Please select active test cases to run.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    onRunSelectedTests?.(activeSelectedTests);
+    setSelectedTestCases([]);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -182,6 +211,14 @@ const TestCaseManager = ({ testCases, onTestCasesChange, onNavigateToGenerator }
               </div>
               {selectedTestCases.length > 0 && (
                 <div className="flex space-x-2">
+                  <Button
+                    size="sm"
+                    onClick={handleRunSelectedTests}
+                    className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                  >
+                    <Play className="h-4 w-4 mr-1" />
+                    Run Selected
+                  </Button>
                   <Button
                     size="sm"
                     onClick={() => handleBulkStatusUpdate("active")}

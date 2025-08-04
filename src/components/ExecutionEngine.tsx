@@ -21,6 +21,7 @@ interface ExecutionEngineProps {
   onHeadlessModeChange?: (headless: boolean) => void;
   onExecutionResults?: (results: TestResult[], percentage: number) => void;
   testCases?: any[];
+  runningTestCases?: string[];
 }
 
 const ExecutionEngine = ({ 
@@ -29,7 +30,8 @@ const ExecutionEngine = ({
   isHeadlessMode = true,
   onHeadlessModeChange,
   onExecutionResults,
-  testCases = []
+  testCases = [],
+  runningTestCases = []
 }: ExecutionEngineProps) => {
   const [isRunning, setIsRunning] = useState(false);
   const [testResults, setTestResults] = useState<TestResult[]>(executionResults);
@@ -61,29 +63,44 @@ const ExecutionEngine = ({
   };
 
   const runTests = async () => {
-    // Get active test cases from testCases prop
-    const activeTestCases = testCases.filter(tc => tc.status === "active");
+    // If we have specific running test cases, use those; otherwise use all active test cases
+    let testsToRun = [];
     
-    if (activeTestCases.length === 0) {
+    if (runningTestCases.length > 0) {
+      // Use the specific test cases that were selected to run
+      testsToRun = testCases.filter(tc => runningTestCases.includes(tc.id) && tc.status === "active");
+    } else {
+      // Use all active test cases
+      testsToRun = testCases.filter(tc => tc.status === "active");
+    }
+    
+    if (testsToRun.length === 0) {
       toast({
-        title: "No Active Tests Available",
-        description: "Please ensure you have active test cases to execute.",
+        title: "No Tests Available",
+        description: "Please ensure you have test cases to execute.",
         variant: "destructive",
       });
       return;
     }
-    
-    // Filter test results to only include active ones based on testCases
-    const activeTestResults = testResults.filter(test => {
-      const correspondingTestCase = testCases.find(tc => tc.name === test.name);
-      return correspondingTestCase && correspondingTestCase.status === "active";
-    });
+
+    // Create test results from the tests to run if executionResults is empty
+    if (testResults.length === 0 || runningTestCases.length > 0) {
+      const newTestResults = testsToRun.map(testCase => ({
+        id: testCase.id,
+        name: testCase.name,
+        status: "pending" as const,
+        duration: "0s",
+        details: "Waiting to run",
+        type: testCase.type
+      }));
+      setTestResults(newTestResults);
+    }
     
     setIsRunning(true);
     
     toast({
-      title: "Running Active Tests",
-      description: `Executing ${activeTestCases.length} active test case(s) in headless mode. Archived tests are skipped.`,
+      title: "Running Tests",
+      description: `Executing ${testsToRun.length} test case(s) in headless mode.`,
     });
     
     const updatedResults = [...testResults];
@@ -98,18 +115,28 @@ const ExecutionEngine = ({
       "Expected 5 items but found 3 in the list"
     ];
     
-    // Only run tests that have active status in testCases
-    for (let i = 0; i < updatedResults.length; i++) {
-      const correspondingTestCase = testCases.find(tc => tc.name === updatedResults[i].name);
+    // Get current test results or create new ones
+    const currentResults = testResults.length > 0 ? [...testResults] : testsToRun.map(testCase => ({
+      id: testCase.id,
+      name: testCase.name,
+      status: "pending" as const,
+      duration: "0s",
+      details: "Waiting to run"
+    }));
+
+    // Only run tests that are in our current results and match the running test cases
+    for (let i = 0; i < currentResults.length; i++) {
+      const testResult = currentResults[i];
+      const correspondingTestCase = testsToRun.find(tc => tc.id === testResult.id);
       
-      // Skip if test case doesn't exist or is archived
-      if (!correspondingTestCase || correspondingTestCase.status === "archived") {
+      // Skip if test case doesn't exist in our tests to run
+      if (!correspondingTestCase) {
         continue;
       }
       
       // Set test to running
-      updatedResults[i] = { ...updatedResults[i], status: "running" as const };
-      setTestResults([...updatedResults]);
+      currentResults[i] = { ...currentResults[i], status: "running" as const };
+      setTestResults([...currentResults]);
       
       // Simulate test execution time in headless mode
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -118,32 +145,28 @@ const ExecutionEngine = ({
       const passed = Math.random() > 0.3;
       const errorMessage = passed ? undefined : detailedFailureReasons[Math.floor(Math.random() * detailedFailureReasons.length)];
       
-      updatedResults[i] = { 
-        ...updatedResults[i], 
+      currentResults[i] = { 
+        ...currentResults[i], 
         status: passed ? "passed" as const : "failed" as const,
         duration: `${(Math.random() * 5 + 1).toFixed(1)}s`,
         details: passed ? "Test passed successfully" : "Test failed - assertion error",
         error: errorMessage
       };
       
-      setTestResults([...updatedResults]);
+      setTestResults([...currentResults]);
     }
     
     setIsRunning(false);
     
-    // Calculate success percentage only for active tests
-    const activeResults = updatedResults.filter(r => {
-      const correspondingTestCase = testCases.find(tc => tc.name === r.name);
-      return correspondingTestCase && correspondingTestCase.status === "active";
-    });
-    const passedCount = activeResults.filter(r => r.status === "passed").length;
-    const newSuccessPercentage = activeResults.length > 0 ? Math.round((passedCount / activeResults.length) * 100) : 0;
+    // Calculate success percentage
+    const passedCount = currentResults.filter(r => r.status === "passed").length;
+    const newSuccessPercentage = currentResults.length > 0 ? Math.round((passedCount / currentResults.length) * 100) : 0;
     
-    onExecutionResults?.(updatedResults, newSuccessPercentage);
+    onExecutionResults?.(currentResults, newSuccessPercentage);
     
     toast({
       title: "Test Execution Complete",
-      description: `${activeResults.length} active test case(s) executed. Success rate: ${newSuccessPercentage}%`,
+      description: `${currentResults.length} test case(s) executed. Success rate: ${newSuccessPercentage}%`,
     });
   };
 
@@ -345,35 +368,36 @@ const ExecutionEngine = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {testResults.map((result) => (
-              <div key={result.id} className="flex items-center justify-between p-4 bg-slate-700 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  {getStatusIcon(result.status)}
-                  <div>
-                    <h4 className="text-white font-medium">{result.name}</h4>
-                    <p className="text-sm text-slate-400">{result.details}</p>
-                    {result.status === "failed" && result.error && (
-                      <p className="text-sm text-red-400 mt-1">Error: {result.error}</p>
-                    )}
+            {testResults.length > 0 ? (
+              // Remove duplicates by using a Set based on test ID
+              Array.from(new Map(testResults.map(result => [result.id, result])).values()).map((result) => (
+                <div key={result.id} className="flex items-center justify-between p-4 bg-slate-700 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    {getStatusIcon(result.status)}
+                    <div>
+                      <h4 className="text-white font-medium">{result.name}</h4>
+                      <p className="text-sm text-slate-400">{result.details}</p>
+                      {result.status === "failed" && result.error && (
+                        <p className="text-sm text-red-400 mt-1">Error: {result.error}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <span className="text-sm text-slate-400">{result.duration}</span>
+                    <Badge className={`${getStatusColor(result.status)} text-white`}>
+                      {result.status}
+                    </Badge>
                   </div>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <span className="text-sm text-slate-400">{result.duration}</span>
-                  <Badge className={`${getStatusColor(result.status)} text-white`}>
-                    {result.status}
-                  </Badge>
-                </div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <Clock className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-white mb-2">No Test Results</h3>
+                <p className="text-slate-400">Select test cases from the Test Cases tab and click "Run Selected" to see results here.</p>
               </div>
-            ))}
+            )}
           </div>
-          
-          {testResults.length === 0 && (
-            <div className="text-center py-8">
-              <Clock className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">No Test Results</h3>
-              <p className="text-slate-400">Test results will appear here after running Playwright tests.</p>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>
