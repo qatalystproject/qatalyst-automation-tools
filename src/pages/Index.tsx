@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import AuthenticationCard from "@/components/AuthenticationCard";
 import GherkinGenerator from "@/components/GherkinGenerator";
 import PlaywrightGenerator from "@/components/PlaywrightGenerator";
-import TestCaseManager from "@/components/TestCaseManager";
+import TestCaseManager from "@/components/test-case-manager";
 import ExecutionEngine from "@/components/ExecutionEngine";
 import ExportManager from "@/components/ExportManager";
 import Footer from "@/components/Footer";
