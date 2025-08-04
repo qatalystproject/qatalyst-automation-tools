@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,10 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 import AuthenticationCard from "@/components/AuthenticationCard";
 import GherkinGenerator from "@/components/GherkinGenerator";
 import PlaywrightGenerator from "@/components/PlaywrightGenerator";
-import TestCaseManager from "@/components/test-case-manager";
+import TestCaseManager from "@/components/TestCaseManager";
 import ExecutionEngine from "@/components/ExecutionEngine";
 import ExportManager from "@/components/ExportManager";
-import Footer from "@/components/Footer";
 
 const Index = () => {
   const [openaiKey, setOpenaiKey] = useState("");
@@ -100,16 +98,14 @@ const Index = () => {
   };
 
   const handleExecutionResults = (results: any[], percentage: number) => {
-    // Merge with existing results instead of replacing
-    setExecutionResults(prev => [...prev, ...results]);
+    setExecutionResults(results);
     setSuccessPercentage(percentage);
     // Auto-navigate to Execute tab
     setActiveTab("execution");
   };
 
   const handleExecutionResultsUpdate = (results: any[], percentage: number) => {
-    // Merge with existing results instead of replacing
-    setExecutionResults(prev => [...prev, ...results]);
+    setExecutionResults(results);
     setSuccessPercentage(percentage);
   };
 
@@ -118,30 +114,27 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-slate via-midnight-navy to-dark-slate">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
-      <div className="border-b border-slate-700 bg-midnight-navy/50 backdrop-blur-sm">
+      <div className="border-b border-slate-700 bg-slate-900/50 backdrop-blur-sm">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="h-12 w-12 rounded-lg overflow-hidden">
                 <img 
-                  src="/lovable-uploads/6e90bcc4-e6cf-4651-b20f-95748717815c.png" 
+                  src="/lovable-uploads/cbcade91-def1-4f98-8c03-f4b432f827b7.png" 
                   alt="QAtalyst Logo" 
                   className="h-full w-full object-contain"
                 />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-electric-blue to-bright-cyan bg-clip-text text-transparent">
-                  QAtalyst
-                </h1>
-                <p className="text-sm text-secondary-text">Test Smarter. Ship Faster.</p>
-              </div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                QAtalyst
+              </h1>
             </div>
             <div className="flex items-center space-x-2">
               {isAuthenticated && (
-                <div className="flex items-center space-x-2 text-sm text-emerald-neon">
-                  <div className="h-2 w-2 rounded-full bg-emerald-neon animate-pulse"></div>
+                <div className="flex items-center space-x-2 text-sm text-green-400">
+                  <div className="h-2 w-2 rounded-full bg-green-400"></div>
                   <span>API Connected</span>
                 </div>
               )}
@@ -157,24 +150,24 @@ const Index = () => {
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5 bg-midnight-navy border-slate-700">
-              <TabsTrigger value="generator" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-electric-blue data-[state=active]:to-bright-cyan data-[state=active]:text-white">
+            <TabsList className="grid w-full grid-cols-5 bg-slate-800 border-slate-700">
+              <TabsTrigger value="generator" className="data-[state=active]:bg-blue-600">
                 <FileText className="h-4 w-4 mr-2" />
                 Generator
               </TabsTrigger>
-              <TabsTrigger value="playwright" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-electric-blue data-[state=active]:to-bright-cyan data-[state=active]:text-white">
+              <TabsTrigger value="playwright" className="data-[state=active]:bg-blue-600">
                 <Play className="h-4 w-4 mr-2" />
                 Playwright
               </TabsTrigger>
-              <TabsTrigger value="management" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-electric-blue data-[state=active]:to-bright-cyan data-[state=active]:text-white">
+              <TabsTrigger value="management" className="data-[state=active]:bg-blue-600">
                 <Settings className="h-4 w-4 mr-2" />
                 Test Cases
               </TabsTrigger>
-              <TabsTrigger value="execution" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-electric-blue data-[state=active]:to-bright-cyan data-[state=active]:text-white">
+              <TabsTrigger value="execution" className="data-[state=active]:bg-blue-600">
                 <Play className="h-4 w-4 mr-2" />
                 Execute
               </TabsTrigger>
-              <TabsTrigger value="export" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-electric-blue data-[state=active]:to-bright-cyan data-[state=active]:text-white">
+              <TabsTrigger value="export" className="data-[state=active]:bg-blue-600">
                 <GitBranch className="h-4 w-4 mr-2" />
                 Export
               </TabsTrigger>
@@ -233,8 +226,6 @@ const Index = () => {
           </Tabs>
         )}
       </div>
-
-      <Footer />
     </div>
   );
 };
