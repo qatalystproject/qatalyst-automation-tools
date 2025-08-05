@@ -263,6 +263,11 @@ Requirements:
       onPlaywrightGenerated?.("");
       onPlaywrightCodeChange?.("");
       
+      // Reset generated Gherkin via callback if available
+      if (window.resetGherkinFields) {
+        window.resetGherkinFields();
+      }
+      
       const failedCount = mockResults.filter(r => r.status === "failed").length;
       
       toast({

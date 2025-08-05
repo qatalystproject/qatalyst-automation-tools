@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -110,6 +110,14 @@ const Index = () => {
     setGeneratedGherkin("");
   };
 
+  // Make reset function available globally for PlaywrightGenerator
+  useEffect(() => {
+    window.resetGherkinFields = handleResetGherkinFields;
+    return () => {
+      delete window.resetGherkinFields;
+    };
+  }, []);
+
   const handleExecutionResults = (results: any[], percentage: number) => {
     setExecutionResults(results);
     setSuccessPercentage(percentage);
@@ -169,32 +177,29 @@ const Index = () => {
       "Expected 5 items but found 3 in the list"
     ];
 
-    // Execute each test sequentially
-    const finalResults = [];
-    for (let i = 0; i < selectedTests.length; i++) {
-      const testCase = selectedTests[i];
-      
-      // Simulate execution time
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const passed = Math.random() > 0.3;
-      const errorMessage = passed ? undefined : detailedFailureReasons[Math.floor(Math.random() * detailedFailureReasons.length)];
-      
-      const result = {
-        id: testCase.id,
-        name: testCase.name,
-        status: passed ? "passed" as const : "failed" as const,
-        duration: `${(Math.random() * 5 + 1).toFixed(1)}s`,
-        details: passed ? "Test passed successfully" : "Test failed - assertion error",
-        error: errorMessage,
-        type: testCase.type
-      };
-      
-      finalResults.push(result);
-      
-      // Update results progressively
-      setExecutionResults([...finalResults]);
-    }
+    // Execute all tests in parallel instead of sequentially
+    const finalResults = await Promise.all(
+      selectedTests.map(async (testCase, index) => {
+        // Simulate execution time
+        await new Promise(resolve => setTimeout(resolve, 2000 + index * 100));
+        
+        const passed = Math.random() > 0.3;
+        const errorMessage = passed ? undefined : detailedFailureReasons[Math.floor(Math.random() * detailedFailureReasons.length)];
+        
+        return {
+          id: testCase.id,
+          name: testCase.name,
+          status: passed ? "passed" as const : "failed" as const,
+          duration: `${(Math.random() * 5 + 1).toFixed(1)}s`,
+          details: passed ? "Test passed successfully" : "Test failed - assertion error",
+          error: errorMessage,
+          type: testCase.type
+        };
+      })
+    );
+    
+    // Update results all at once
+    setExecutionResults(finalResults);
     
     // Calculate final success percentage
     const passedCount = finalResults.filter(r => r.status === "passed").length;

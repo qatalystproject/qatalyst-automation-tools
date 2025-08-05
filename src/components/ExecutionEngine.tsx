@@ -62,17 +62,9 @@ const ExecutionEngine = ({
     console.log(`✅ Test execution completed for: ${testName}`);
   };
 
-  const runTests = async () => {
-    // If we have specific running test cases, use those; otherwise use all active test cases
-    let testsToRun = [];
-    
-    if (runningTestCases.length > 0) {
-      // Use the specific test cases that were selected to run
-      testsToRun = testCases.filter(tc => runningTestCases.includes(tc.id) && tc.status === "active");
-    } else {
-      // Use all active test cases
-      testsToRun = testCases.filter(tc => tc.status === "active");
-    }
+  const runActiveTests = async () => {
+    // Always run all active test cases when using "Run Active Tests"
+    const testsToRun = testCases.filter(tc => tc.status === "active");
     
     if (testsToRun.length === 0) {
       toast({
@@ -297,8 +289,8 @@ const ExecutionEngine = ({
           <CardContent className="space-y-3">
             {!isRunning ? (
               <Button 
-                onClick={runTests}
-                disabled={testResults.length === 0}
+                onClick={runActiveTests}
+                disabled={testCases.filter(tc => tc.status === "active").length === 0}
                 className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
               >
                 <Play className="h-4 w-4 mr-2" />
