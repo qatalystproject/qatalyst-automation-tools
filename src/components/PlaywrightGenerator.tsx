@@ -257,11 +257,17 @@ Requirements:
       onExecutionResults?.(mockResults, successPercentage);
       onNavigateToExecution?.();
       
+      // Reset all fields after successful run
+      setGherkinInput("");
+      setPlaywrightCode("");
+      onPlaywrightGenerated?.("");
+      onPlaywrightCodeChange?.("");
+      
       const failedCount = mockResults.filter(r => r.status === "failed").length;
       
       toast({
         title: "Tests Executed",
-        description: `Playwright tests completed. ${passedCount} passed, ${failedCount} failed (${successPercentage}% success). Only active test cases were executed. Navigating to Execute tab.`,
+        description: `Playwright tests completed. ${passedCount} passed, ${failedCount} failed (${successPercentage}% success). All fields have been reset.`,
       });
     } catch (error) {
       toast({

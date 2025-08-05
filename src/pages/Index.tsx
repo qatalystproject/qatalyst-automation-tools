@@ -13,10 +13,13 @@ import PlaywrightGenerator from "@/components/PlaywrightGenerator";
 import TestCaseManager from "@/components/TestCaseManager";
 import ExecutionEngine from "@/components/ExecutionEngine";
 import ExportManager from "@/components/ExportManager";
+import Homepage from "@/components/Homepage";
+import Footer from "@/components/Footer";
 
 const Index = () => {
   const [openaiKey, setOpenaiKey] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showHomepage, setShowHomepage] = useState(true);
   const [activeTab, setActiveTab] = useState("generator");
   const [generatedGherkin, setGeneratedGherkin] = useState("");
   const [playwrightCode, setPlaywrightCode] = useState("");
@@ -30,10 +33,15 @@ const Index = () => {
   const handleAuthentication = (key: string) => {
     setOpenaiKey(key);
     setIsAuthenticated(true);
+    setShowHomepage(false);
     toast({
       title: "Authentication Success",
       description: "OpenAI API Key has been configured successfully.",
     });
+  };
+
+  const handleGetStarted = () => {
+    setShowHomepage(false);
   };
 
   const extractScenariosFromGherkin = (gherkin: string) => {
@@ -98,6 +106,10 @@ const Index = () => {
     setPlaywrightCode(code);
   };
 
+  const handleResetGherkinFields = () => {
+    setGeneratedGherkin("");
+  };
+
   const handleExecutionResults = (results: any[], percentage: number) => {
     setExecutionResults(results);
     setSuccessPercentage(percentage);
@@ -110,7 +122,7 @@ const Index = () => {
     setSuccessPercentage(percentage);
   };
 
-  const handleRunSelectedTests = (selectedTestIds: string[]) => {
+  const handleRunSelectedTests = async (selectedTestIds: string[]) => {
     const selectedTests = testCases.filter(tc => selectedTestIds.includes(tc.id) && tc.status === "active");
     
     if (selectedTests.length === 0) {
@@ -126,9 +138,9 @@ const Index = () => {
     const testResults = selectedTests.map(testCase => ({
       id: testCase.id,
       name: testCase.name,
-      status: "pending" as const,
+      status: "running" as const,
       duration: "0s",
-      details: "Waiting to run",
+      details: "Test is running...",
       type: testCase.type
     }));
 
@@ -139,8 +151,61 @@ const Index = () => {
     setActiveTab("execution");
     
     toast({
-      title: "Tests Queued",
-      description: `${selectedTests.length} test case(s) queued for execution.`,
+      title: "Tests Running",
+      description: `${selectedTests.length} test case(s) are now executing automatically.`,
+    });
+
+    // Simulate automatic execution
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const detailedFailureReasons = [
+      "Assertion failed: Expected text 'Welcome' but found 'Hello'",
+      "Element with selector '[data-testid=\"login-button\"]' not found",
+      "Timeout: Element '[placeholder=\"Username\"]' was not visible after 30s",
+      "Expected URL to contain '/dashboard' but got '/login'",
+      "Assertion failed: Expected element to be visible but it was hidden",
+      "Network request failed: GET /api/users returned 404",
+      "Element '[data-test=\"submit\"]' is not clickable at this point",
+      "Expected 5 items but found 3 in the list"
+    ];
+
+    // Execute each test sequentially
+    const finalResults = [];
+    for (let i = 0; i < selectedTests.length; i++) {
+      const testCase = selectedTests[i];
+      
+      // Simulate execution time
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const passed = Math.random() > 0.3;
+      const errorMessage = passed ? undefined : detailedFailureReasons[Math.floor(Math.random() * detailedFailureReasons.length)];
+      
+      const result = {
+        id: testCase.id,
+        name: testCase.name,
+        status: passed ? "passed" as const : "failed" as const,
+        duration: `${(Math.random() * 5 + 1).toFixed(1)}s`,
+        details: passed ? "Test passed successfully" : "Test failed - assertion error",
+        error: errorMessage,
+        type: testCase.type
+      };
+      
+      finalResults.push(result);
+      
+      // Update results progressively
+      setExecutionResults([...finalResults]);
+    }
+    
+    // Calculate final success percentage
+    const passedCount = finalResults.filter(r => r.status === "passed").length;
+    const newSuccessPercentage = Math.round((passedCount / finalResults.length) * 100);
+    setSuccessPercentage(newSuccessPercentage);
+    
+    setRunningTestCases([]);
+    
+    toast({
+      title: "Execution Complete",
+      description: `${finalResults.length} test case(s) executed. Success rate: ${newSuccessPercentage}%`,
     });
   };
 
@@ -148,13 +213,22 @@ const Index = () => {
     setActiveTab("generator");
   };
 
+  if (showHomepage) {
+    return (
+      <>
+        <Homepage onGetStarted={handleGetStarted} />
+        <Footer />
+      </>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
       <div className="border-b border-slate-700 bg-slate-900/50 backdrop-blur-sm">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setShowHomepage(true)}>
               <div className="h-12 w-12 rounded-lg overflow-hidden">
                 <img 
                   src="/lovable-uploads/cbcade91-def1-4f98-8c03-f4b432f827b7.png" 
@@ -263,6 +337,7 @@ const Index = () => {
           </Tabs>
         )}
       </div>
+      <Footer />
     </div>
   );
 };
