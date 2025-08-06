@@ -142,6 +142,16 @@ const Index = () => {
       return;
     }
 
+    // Check if we have valid Playwright code for execution
+    if (!playwrightCode || playwrightCode.trim() === "") {
+      toast({
+        title: "No Playwright Code",
+        description: "Please generate Playwright code first before running tests.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Create test results for selected tests
     const testResults = selectedTests.map(testCase => ({
       id: testCase.id,

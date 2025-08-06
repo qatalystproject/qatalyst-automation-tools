@@ -100,13 +100,13 @@ const Homepage = ({ onGetStarted }: HomepageProps) => {
         </div>
 
         {/* Stats Section */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 max-w-4xl mx-auto">
           {stats.map((stat, index) => (
             <Card key={index} className="bg-slate-800/50 border-slate-700 text-center">
-              <CardContent className="p-6">
-                <div className="text-3xl font-bold text-blue-400 mb-2">{stat.value}</div>
-                <div className="text-white font-semibold mb-1">{stat.label}</div>
-                <div className="text-sm text-slate-400">{stat.description}</div>
+              <CardContent className="p-8">
+                <div className="text-4xl font-bold text-blue-400 mb-3">{stat.value}</div>
+                <div className="text-xl font-semibold text-white mb-2">{stat.label}</div>
+                <div className="text-sm text-slate-400 leading-relaxed">{stat.description}</div>
               </CardContent>
             </Card>
           ))}

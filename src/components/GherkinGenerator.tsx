@@ -432,11 +432,35 @@ Feature: ${scenarioDesc}
                 <Label htmlFor="scenarioDesc" className="text-white">Scenario Description</Label>
                 <div className="mt-2 mb-2">
                   <p className="text-xs text-slate-400 mb-2">Template examples:</p>
-                  <div className="space-y-1 text-xs text-slate-500">
-                    <p>• "User registration and login flow with email verification"</p>
-                    <p>• "E-commerce checkout process with payment gateway"</p>
-                    <p>• "Admin dashboard CRUD operations for user management"</p>
-                    <p>• "Form validation and error handling scenarios"</p>
+                  <div className="space-y-1 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setScenarioDesc("User registration and login flow with email verification")}
+                      className="block text-left text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                    >
+                      • "User registration and login flow with email verification"
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setScenarioDesc("E-commerce checkout process with payment gateway")}
+                      className="block text-left text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                    >
+                      • "E-commerce checkout process with payment gateway"
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setScenarioDesc("Admin dashboard CRUD operations for user management")}
+                      className="block text-left text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                    >
+                      • "Admin dashboard CRUD operations for user management"
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setScenarioDesc("Form validation and error handling scenarios")}
+                      className="block text-left text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                    >
+                      • "Form validation and error handling scenarios"
+                    </button>
                   </div>
                 </div>
                 <Textarea
