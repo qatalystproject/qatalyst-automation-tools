@@ -1,10 +1,10 @@
-import { Github, Linkedin, Twitter, Mail, Heart } from "lucide-react";
+import { Github, Mail, Heart } from "lucide-react";
 
 const Footer = () => {
   return (
     <footer className="bg-slate-900 border-t border-slate-700 mt-12">
       <div className="container mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* About Us */}
           <div>
             <h3 className="text-lg font-semibold text-white mb-4">About QAtalyst</h3>
@@ -15,33 +15,6 @@ const Footer = () => {
             <p className="text-slate-400 text-sm mt-3">
               Built with ❤️ for quality assurance professionals worldwide.
             </p>
-          </div>
-
-          {/* Quick Links */}
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-              <li>
-                <a href="#features" className="text-slate-400 hover:text-blue-400 text-sm transition-colors">
-                  Features
-                </a>
-              </li>
-              <li>
-                <a href="#documentation" className="text-slate-400 hover:text-blue-400 text-sm transition-colors">
-                  Documentation
-                </a>
-              </li>
-              <li>
-                <a href="#support" className="text-slate-400 hover:text-blue-400 text-sm transition-colors">
-                  Support
-                </a>
-              </li>
-              <li>
-                <a href="#privacy" className="text-slate-400 hover:text-blue-400 text-sm transition-colors">
-                  Privacy Policy
-                </a>
-              </li>
-            </ul>
           </div>
 
           {/* Connect With Us */}
@@ -55,22 +28,6 @@ const Footer = () => {
                 className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors"
               >
                 <Github className="h-5 w-5 text-slate-400 hover:text-white" />
-              </a>
-              <a 
-                href="https://linkedin.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors"
-              >
-                <Linkedin className="h-5 w-5 text-slate-400 hover:text-blue-400" />
-              </a>
-              <a 
-                href="https://twitter.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors"
-              >
-                <Twitter className="h-5 w-5 text-slate-400 hover:text-cyan-400" />
               </a>
               <a 
                 href="mailto:contact@qatalyst.com"

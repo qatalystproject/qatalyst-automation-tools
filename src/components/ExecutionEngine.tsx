@@ -75,24 +75,23 @@ const ExecutionEngine = ({
       return;
     }
 
-    // Always create fresh test results from active test cases
+    // Always create fresh test results from active test cases for re-run
     const newTestResults = testsToRun.map(testCase => ({
       id: testCase.id,
       name: testCase.name,
-      status: "pending" as const,
+      status: "running" as const,
       duration: "0s",
-      details: "Waiting to run"
+      details: "Test is running..."
     }));
-    setTestResults(newTestResults);
     
+    setTestResults(newTestResults);
     setIsRunning(true);
     
     toast({
       title: "Running Tests",
-      description: `Executing ${testsToRun.length} test case(s) in headless mode.`,
+      description: `Re-running ${testsToRun.length} active test case(s) in headless mode.`,
     });
     
-    const updatedResults = [...testResults];
     const detailedFailureReasons = [
       "Assertion failed: Expected text 'Welcome' but found 'Hello'",
       "Element with selector '[data-testid=\"login-button\"]' not found",
@@ -103,59 +102,40 @@ const ExecutionEngine = ({
       "Element '[data-test=\"submit\"]' is not clickable at this point",
       "Expected 5 items but found 3 in the list"
     ];
-    
-    // Get current test results or create new ones
-    const currentResults = testResults.length > 0 ? [...testResults] : testsToRun.map(testCase => ({
-      id: testCase.id,
-      name: testCase.name,
-      status: "pending" as const,
-      duration: "0s",
-      details: "Waiting to run"
-    }));
 
-    // Only run tests that are in our current results and match the running test cases
-    for (let i = 0; i < currentResults.length; i++) {
-      const testResult = currentResults[i];
-      const correspondingTestCase = testsToRun.find(tc => tc.id === testResult.id);
-      
-      // Skip if test case doesn't exist in our tests to run
-      if (!correspondingTestCase) {
-        continue;
-      }
-      
-      // Set test to running
-      currentResults[i] = { ...currentResults[i], status: "running" as const };
-      setTestResults([...currentResults]);
-      
-      // Simulate test execution time in headless mode
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Determine test result
-      const passed = Math.random() > 0.3;
-      const errorMessage = passed ? undefined : detailedFailureReasons[Math.floor(Math.random() * detailedFailureReasons.length)];
-      
-      currentResults[i] = { 
-        ...currentResults[i], 
-        status: passed ? "passed" as const : "failed" as const,
-        duration: `${(Math.random() * 5 + 1).toFixed(1)}s`,
-        details: passed ? "Test passed successfully" : "Test failed - assertion error",
-        error: errorMessage
-      };
-      
-      setTestResults([...currentResults]);
-    }
+    // Execute all tests in parallel
+    const finalResults = await Promise.all(
+      testsToRun.map(async (testCase, index) => {
+        // Simulate execution time
+        await new Promise(resolve => setTimeout(resolve, 2000 + index * 100));
+        
+        const passed = Math.random() > 0.3;
+        const errorMessage = passed ? undefined : detailedFailureReasons[Math.floor(Math.random() * detailedFailureReasons.length)];
+        
+        return {
+          id: testCase.id,
+          name: testCase.name,
+          status: passed ? "passed" as const : "failed" as const,
+          duration: `${(Math.random() * 5 + 1).toFixed(1)}s`,
+          details: passed ? "Test passed successfully" : "Test failed - assertion error",
+          error: errorMessage
+        };
+      })
+    );
     
+    // Update results all at once
+    setTestResults(finalResults);
     setIsRunning(false);
     
     // Calculate success percentage
-    const passedCount = currentResults.filter(r => r.status === "passed").length;
-    const newSuccessPercentage = currentResults.length > 0 ? Math.round((passedCount / currentResults.length) * 100) : 0;
+    const passedCount = finalResults.filter(r => r.status === "passed").length;
+    const newSuccessPercentage = Math.round((passedCount / finalResults.length) * 100);
     
-    onExecutionResults?.(currentResults, newSuccessPercentage);
+    onExecutionResults?.(finalResults, newSuccessPercentage);
     
     toast({
       title: "Test Execution Complete",
-      description: `${currentResults.length} test case(s) executed. Success rate: ${newSuccessPercentage}%`,
+      description: `${finalResults.length} test case(s) executed. Success rate: ${newSuccessPercentage}%`,
     });
   };
 
