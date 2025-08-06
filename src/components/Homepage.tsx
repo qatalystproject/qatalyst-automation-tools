@@ -50,8 +50,7 @@ const Homepage = ({ onGetStarted }: HomepageProps) => {
   const stats = [
     { value: "95%", label: "Test Coverage", description: "Average coverage achieved" },
     { value: "80%", label: "Time Saved", description: "Reduction in test creation time" },
-    { value: "99%", label: "Reliability", description: "Platform uptime guarantee" },
-    { value: "24/7", label: "Support", description: "Round-the-clock assistance" }
+    { value: "99%", label: "Reliability", description: "Platform uptime guarantee" }
   ];
 
   return (
@@ -186,10 +185,10 @@ const Homepage = ({ onGetStarted }: HomepageProps) => {
         {/* CTA Section */}
         <Card className="bg-gradient-to-r from-blue-600/20 to-cyan-600/20 border-blue-500/30">
           <CardContent className="p-12 text-center">
-            <h3 className="text-3xl font-bold text-white mb-4">
+            <h3 className="text-3xl font-bold text-black mb-4">
               Ready to Transform Your Testing?
             </h3>
-            <p className="text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
+            <p className="text-lg text-black mb-8 max-w-2xl mx-auto">
               Join thousands of QA professionals who have revolutionized their testing process with QAtalyst.
             </p>
             <Button 

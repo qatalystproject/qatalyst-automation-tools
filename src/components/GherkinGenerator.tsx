@@ -465,7 +465,7 @@ Feature: ${scenarioDesc}
               <Button
                 onClick={downloadCsvTemplate}
                 variant="outline"
-                className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
+                className="w-full border-slate-600 text-black hover:bg-slate-700"
               >
                 <FileText className="h-4 w-4 mr-2" />
                 Download CSV Template
@@ -602,7 +602,7 @@ Feature: ${scenarioDesc}
               onClick={clearGeneratedGherkin}
               variant="outline"
               size="sm"
-              className="border-slate-600 text-slate-300 hover:bg-slate-700"
+              className="border-slate-600 text-black hover:bg-slate-700"
             >
               Clear
             </Button>
