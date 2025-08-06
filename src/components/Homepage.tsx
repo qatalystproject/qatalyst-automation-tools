@@ -48,9 +48,9 @@ const Homepage = ({ onGetStarted }: HomepageProps) => {
   ];
 
   const stats = [
-    { value: "95%", label: "Test Coverage", description: "Average coverage achieved" },
-    { value: "80%", label: "Time Saved", description: "Reduction in test creation time" },
-    { value: "99%", label: "Reliability", description: "Platform uptime guarantee" }
+    { value: "95.7%", label: "Test Coverage", description: "Average coverage achieved" },
+    { value: "82.3%", label: "Time Saved", description: "Reduction in test creation time" },
+    { value: "99.9%", label: "Reliability", description: "Platform uptime guarantee" }
   ];
 
   return (

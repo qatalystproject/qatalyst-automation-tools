@@ -75,18 +75,15 @@ const ExecutionEngine = ({
       return;
     }
 
-    // Create test results from the tests to run if executionResults is empty
-    if (testResults.length === 0 || runningTestCases.length > 0) {
-      const newTestResults = testsToRun.map(testCase => ({
-        id: testCase.id,
-        name: testCase.name,
-        status: "pending" as const,
-        duration: "0s",
-        details: "Waiting to run",
-        type: testCase.type
-      }));
-      setTestResults(newTestResults);
-    }
+    // Always create fresh test results from active test cases
+    const newTestResults = testsToRun.map(testCase => ({
+      id: testCase.id,
+      name: testCase.name,
+      status: "pending" as const,
+      duration: "0s",
+      details: "Waiting to run"
+    }));
+    setTestResults(newTestResults);
     
     setIsRunning(true);
     

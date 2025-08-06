@@ -430,6 +430,15 @@ Feature: ${scenarioDesc}
               </div>
               <div>
                 <Label htmlFor="scenarioDesc" className="text-white">Scenario Description</Label>
+                <div className="mt-2 mb-2">
+                  <p className="text-xs text-slate-400 mb-2">Template examples:</p>
+                  <div className="space-y-1 text-xs text-slate-500">
+                    <p>• "User registration and login flow with email verification"</p>
+                    <p>• "E-commerce checkout process with payment gateway"</p>
+                    <p>• "Admin dashboard CRUD operations for user management"</p>
+                    <p>• "Form validation and error handling scenarios"</p>
+                  </div>
+                </div>
                 <Textarea
                   id="scenarioDesc"
                   placeholder="Describe the scenario you want to test (e.g., 'User registration and login flow')"
