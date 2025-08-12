@@ -246,7 +246,7 @@ const Index = () => {
             <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setShowHomepage(true)}>
               <div className="h-12 w-12 rounded-lg overflow-hidden">
                 <img 
-                  src="/lovable-uploads/cbcade91-def1-4f98-8c03-f4b432f827b7.png" 
+                  src="/lovable-uploads/269d3e8a-a51d-4e23-9146-715eea456ae5.png" 
                   alt="QAtalyst Logo" 
                   className="h-full w-full object-contain"
                 />

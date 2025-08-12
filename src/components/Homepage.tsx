@@ -61,14 +61,19 @@ const Homepage = ({ onGetStarted }: HomepageProps) => {
           <div className="flex items-center justify-center mb-6">
             <div className="h-16 w-16 rounded-xl overflow-hidden mr-4">
               <img 
-                src="/lovable-uploads/cbcade91-def1-4f98-8c03-f4b432f827b7.png" 
+                src="/lovable-uploads/269d3e8a-a51d-4e23-9146-715eea456ae5.png" 
                 alt="QAtalyst Logo" 
                 className="h-full w-full object-contain"
               />
             </div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent">
-              QAtalyst
-            </h1>
+            <div>
+              <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent">
+                QAtalyst
+              </h1>
+              <p className="text-lg text-cyan-300 font-medium mt-2">
+                Test Smarter. Ship Faster
+              </p>
+            </div>
           </div>
           
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
