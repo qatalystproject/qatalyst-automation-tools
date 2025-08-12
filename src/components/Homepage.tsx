@@ -187,13 +187,248 @@ const Homepage = ({ onGetStarted }: HomepageProps) => {
           </div>
         </div>
 
+        {/* Live Demo Preview Section */}
+        <div className="mb-16">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl font-bold text-white mb-4">See QAtalyst in Action</h3>
+            <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+              Watch how QAtalyst transforms your testing workflow in real-time
+            </p>
+          </div>
+          
+          <Card className="bg-slate-800 border-slate-700 overflow-hidden">
+            <CardContent className="p-0">
+              <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 p-8">
+                <div className="bg-slate-900 rounded-lg p-6 border border-slate-700">
+                  <div className="flex items-center space-x-2 mb-4">
+                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span className="text-slate-400 text-sm ml-4">QAtalyst Dashboard</span>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="h-4 bg-gradient-to-r from-blue-600 to-cyan-600 rounded w-3/4"></div>
+                    <div className="h-3 bg-slate-700 rounded w-1/2"></div>
+                    <div className="h-3 bg-slate-700 rounded w-2/3"></div>
+                    <div className="grid grid-cols-3 gap-4 mt-6">
+                      <div className="h-20 bg-slate-800 rounded border border-slate-600"></div>
+                      <div className="h-20 bg-slate-800 rounded border border-slate-600"></div>
+                      <div className="h-20 bg-slate-800 rounded border border-slate-600"></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="absolute top-4 right-4">
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    <Play className="h-4 w-4 mr-2" />
+                    Watch Demo
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Testimonials Section */}
+        <div className="mb-16">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl font-bold text-white mb-4">What Our Users Say</h3>
+            <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+              Join thousands of satisfied QA professionals worldwide
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                name: "Sarah Chen",
+                role: "QA Lead at TechCorp",
+                content: "QAtalyst reduced our test creation time by 80%. The AI-generated scenarios are incredibly accurate and comprehensive.",
+                rating: 5
+              },
+              {
+                name: "Mike Rodriguez",
+                role: "Senior Test Engineer",
+                content: "The Playwright code generation is a game-changer. It produces clean, maintainable test code that actually works.",
+                rating: 5
+              },
+              {
+                name: "Emily Johnson",
+                role: "DevOps Manager",
+                content: "Integration with our CI/CD pipeline was seamless. Our test coverage improved dramatically within weeks.",
+                rating: 5
+              }
+            ].map((testimonial, index) => (
+              <Card key={index} className="bg-slate-800 border-slate-700">
+                <CardContent className="p-6">
+                  <div className="flex mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <span key={i} className="text-yellow-400">★</span>
+                    ))}
+                  </div>
+                  <p className="text-slate-300 mb-4 italic">"{testimonial.content}"</p>
+                  <div className="border-t border-slate-700 pt-4">
+                    <p className="text-white font-semibold">{testimonial.name}</p>
+                    <p className="text-slate-400 text-sm">{testimonial.role}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Integration Section */}
+        <div className="mb-16">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl font-bold text-white mb-4">Seamless Integrations</h3>
+            <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+              Connect with your favorite tools and platforms
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8">
+            {[
+              "GitHub", "GitLab", "Jenkins", "CircleCI", "Azure DevOps", "Jira",
+              "Slack", "Teams", "Docker", "Kubernetes", "AWS", "Vercel"
+            ].map((tool, index) => (
+              <div key={index} className="flex items-center justify-center p-6 bg-slate-800 border border-slate-700 rounded-lg hover:border-slate-600 transition-colors">
+                <span className="text-slate-300 font-medium">{tool}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* FAQ Section */}
+        <div className="mb-16">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl font-bold text-white mb-4">Frequently Asked Questions</h3>
+            <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+              Everything you need to know about QAtalyst
+            </p>
+          </div>
+          
+          <div className="max-w-3xl mx-auto space-y-4">
+            {[
+              {
+                question: "How accurate are the AI-generated test scenarios?",
+                answer: "Our AI has been trained on thousands of test scenarios and achieves 95%+ accuracy. It understands context, edge cases, and testing best practices."
+              },
+              {
+                question: "Can I customize the generated Playwright code?",
+                answer: "Absolutely! All generated code is fully editable. You can modify selectors, add custom logic, and integrate with your existing test framework."
+              },
+              {
+                question: "Does QAtalyst support mobile testing?",
+                answer: "Yes, QAtalyst generates Playwright code that supports mobile browsers and responsive testing across different viewport sizes."
+              },
+              {
+                question: "How do I integrate QAtalyst with my CI/CD pipeline?",
+                answer: "QAtalyst provides export options for all major CI/CD platforms including GitHub Actions, Jenkins, and Azure DevOps with ready-to-use configurations."
+              }
+            ].map((faq, index) => (
+              <Card key={index} className="bg-slate-800 border-slate-700">
+                <CardContent className="p-6">
+                  <h4 className="text-lg font-semibold text-white mb-3">{faq.question}</h4>
+                  <p className="text-slate-300">{faq.answer}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Pricing Section */}
+        <div className="mb-16">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl font-bold text-white mb-4">Choose Your Plan</h3>
+            <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+              Start free and scale as your team grows
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {[
+              {
+                name: "Starter",
+                price: "Free",
+                description: "Perfect for individuals and small teams",
+                features: ["5 test scenarios/month", "Basic Playwright generation", "Community support"],
+                popular: false
+              },
+              {
+                name: "Professional",
+                price: "$29/mo",
+                description: "For growing teams and complex projects",
+                features: ["Unlimited test scenarios", "Advanced AI features", "Priority support", "CI/CD integrations"],
+                popular: true
+              },
+              {
+                name: "Enterprise",
+                price: "Custom",
+                description: "For large organizations with specific needs",
+                features: ["Custom AI training", "Dedicated support", "SLA guarantee", "On-premise deployment"],
+                popular: false
+              }
+            ].map((plan, index) => (
+              <Card key={index} className={`${plan.popular ? 'border-blue-500 bg-gradient-to-b from-blue-600/10 to-slate-800' : 'bg-slate-800 border-slate-700'} relative`}>
+                {plan.popular && (
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <span className="bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-medium">Most Popular</span>
+                  </div>
+                )}
+                <CardContent className="p-8 text-center">
+                  <h4 className="text-2xl font-bold text-white mb-2">{plan.name}</h4>
+                  <div className="text-4xl font-bold text-blue-400 mb-2">{plan.price}</div>
+                  <p className="text-slate-400 mb-6">{plan.description}</p>
+                  <ul className="space-y-3 mb-8 text-left">
+                    {plan.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-center text-slate-300">
+                        <CheckCircle className="h-5 w-5 text-green-400 mr-3 flex-shrink-0" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button className={`w-full ${plan.popular ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-700 hover:bg-slate-600'}`}>
+                    {plan.name === "Enterprise" ? "Contact Sales" : "Get Started"}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Final Stats Section */}
+        <div className="mb-16">
+          <Card className="bg-slate-800 border-slate-700">
+            <CardContent className="p-12 text-center">
+              <h3 className="text-3xl font-bold text-white mb-8">Trusted by Industry Leaders</h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                  <div className="text-4xl font-bold text-blue-400 mb-2">10,000+</div>
+                  <div className="text-slate-300">Active Users</div>
+                </div>
+                <div>
+                  <div className="text-4xl font-bold text-green-400 mb-2">500K+</div>
+                  <div className="text-slate-300">Tests Generated</div>
+                </div>
+                <div>
+                  <div className="text-4xl font-bold text-purple-400 mb-2">50+</div>
+                  <div className="text-slate-300">Countries</div>
+                </div>
+                <div>
+                  <div className="text-4xl font-bold text-orange-400 mb-2">99.9%</div>
+                  <div className="text-slate-300">Uptime</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* CTA Section */}
         <Card className="bg-gradient-to-r from-blue-600/20 to-cyan-600/20 border-blue-500/30">
           <CardContent className="p-12 text-center">
-            <h3 className="text-3xl font-bold text-black mb-4">
+            <h3 className="text-3xl font-bold text-white mb-4">
               Ready to Transform Your Testing?
             </h3>
-            <p className="text-lg text-black mb-8 max-w-2xl mx-auto">
+            <p className="text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
               Join thousands of QA professionals who have revolutionized their testing process with QAtalyst.
             </p>
             <Button 
