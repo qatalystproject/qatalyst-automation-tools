@@ -244,8 +244,8 @@ const Index = () => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setShowHomepage(true)}>
-              <div className="h-12 w-12 rounded-lg overflow-hidden">
-                <img 
+              <div className="h-16 w-16 rounded-lg overflow-hidden">
+                <img
                   src="/lovable-uploads/269d3e8a-a51d-4e23-9146-715eea456ae5.png" 
                   alt="QAtalyst Logo" 
                   className="h-full w-full object-contain"
