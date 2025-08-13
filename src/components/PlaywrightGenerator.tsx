@@ -181,6 +181,11 @@ Requirements:
           allTests += cleanedCode + '\n\n';
         } catch (error) {
           console.error(`Error generating code for scenario: ${title}`, error);
+          
+          if (error.message && error.message.includes('Invalid OpenAI API key')) {
+            throw error; // Re-throw to be caught by outer catch block
+          }
+          
           allTests += `// ❌ Error generating code for: ${title}\ntest('${title}', async () => {\n  // Code generation failed\n});\n\n`;
         }
       }
@@ -196,11 +201,20 @@ Requirements:
       });
     } catch (error) {
       console.error('Error converting Gherkin to Playwright:', error);
-      toast({
-        title: "Conversion Failed",
-        description: "Failed to convert Gherkin to Playwright code. Please try again.",
-        variant: "destructive",
-      });
+      
+      if (error.message && error.message.includes('Invalid OpenAI API key')) {
+        toast({
+          title: "Invalid API Key",
+          description: "Your OpenAI API key is incorrect. Please check your key and try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Conversion Failed",
+          description: "Failed to convert Gherkin to Playwright code. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsConverting(false);
     }

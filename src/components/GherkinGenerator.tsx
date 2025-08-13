@@ -79,6 +79,9 @@ Requirements:
     });
 
     if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('INVALID_API_KEY');
+      }
       throw new Error('Failed to generate Gherkin from OpenAI');
     }
 
@@ -120,6 +123,15 @@ Requirements:
       });
     } catch (error) {
       console.error('OpenAI API Error:', error);
+      
+      if (error.message === 'INVALID_API_KEY') {
+        toast({
+          title: "Invalid API Key",
+          description: "Your OpenAI API key is incorrect. Please check your key and try again.",
+          variant: "destructive",
+        });
+        return;
+      }
       
       const mockGherkin = `# URL: ${url}
 Feature: ${scenarioDesc}
