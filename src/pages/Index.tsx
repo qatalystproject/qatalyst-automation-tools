@@ -13,7 +13,6 @@ import PlaywrightGenerator from "@/components/PlaywrightGenerator";
 import TestCaseManager from "@/components/TestCaseManager";
 import ExecutionEngine from "@/components/ExecutionEngine";
 import ExportManager from "@/components/ExportManager";
-import { LocatorInspector } from "@/components/LocatorInspector";
 import Homepage from "@/components/Homepage";
 import Footer from "@/components/Footer";
 
@@ -275,7 +274,7 @@ const Index = () => {
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6 bg-slate-800 border-slate-700">
+            <TabsList className="grid w-full grid-cols-5 bg-slate-800 border-slate-700">
               <TabsTrigger value="generator" className="data-[state=active]:bg-blue-600">
                 <FileText className="h-4 w-4 mr-2" />
                 Generator
@@ -283,10 +282,6 @@ const Index = () => {
               <TabsTrigger value="playwright" className="data-[state=active]:bg-blue-600">
                 <Play className="h-4 w-4 mr-2" />
                 Playwright
-              </TabsTrigger>
-              <TabsTrigger value="locator" className="data-[state=active]:bg-blue-600">
-                <Upload className="h-4 w-4 mr-2" />
-                Locator Inspector
               </TabsTrigger>
               <TabsTrigger value="management" className="data-[state=active]:bg-blue-600">
                 <Settings className="h-4 w-4 mr-2" />
@@ -321,17 +316,6 @@ const Index = () => {
                 onExecutionResults={handleExecutionResults}
                 playwrightCode={playwrightCode}
                 onPlaywrightCodeChange={setPlaywrightCode}
-              />
-            </TabsContent>
-
-            <TabsContent value="locator">
-              <LocatorInspector 
-                onLocatorGenerated={(locator) => {
-                  toast({
-                    title: "Locator Generated",
-                    description: `${locator.cssSelector} ready for use in test cases`
-                  });
-                }}
               />
             </TabsContent>
 
