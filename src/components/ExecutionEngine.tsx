@@ -89,54 +89,74 @@ const ExecutionEngine = ({
     
     toast({
       title: "Running Tests",
-      description: `Re-running ${testsToRun.length} active test case(s) in headless mode.`,
+      description: `Running ${testsToRun.length} active test case(s) with real Playwright execution.`,
     });
-    
-    const detailedFailureReasons = [
-      "Assertion failed: Expected text 'Welcome' but found 'Hello'",
-      "Element with selector '[data-testid=\"login-button\"]' not found",
-      "Timeout: Element '[placeholder=\"Username\"]' was not visible after 30s",
-      "Expected URL to contain '/dashboard' but got '/login'",
-      "Assertion failed: Expected element to be visible but it was hidden",
-      "Network request failed: GET /api/users returned 404",
-      "Element '[data-test=\"submit\"]' is not clickable at this point",
-      "Expected 5 items but found 3 in the list"
-    ];
 
-    // Execute all tests in parallel
-    const finalResults = await Promise.all(
-      testsToRun.map(async (testCase, index) => {
-        // Simulate execution time
-        await new Promise(resolve => setTimeout(resolve, 2000 + index * 100));
-        
-        const passed = Math.random() > 0.3;
-        const errorMessage = passed ? undefined : detailedFailureReasons[Math.floor(Math.random() * detailedFailureReasons.length)];
-        
-        return {
-          id: testCase.id,
-          name: testCase.name,
-          status: passed ? "passed" as const : "failed" as const,
-          duration: `${(Math.random() * 5 + 1).toFixed(1)}s`,
-          details: passed ? "Test passed successfully" : "Test failed - assertion error",
-          error: errorMessage
-        };
-      })
-    );
-    
-    // Update results all at once
-    setTestResults(finalResults);
-    setIsRunning(false);
-    
-    // Calculate success percentage
-    const passedCount = finalResults.filter(r => r.status === "passed").length;
-    const newSuccessPercentage = Math.round((passedCount / finalResults.length) * 100);
-    
-    onExecutionResults?.(finalResults, newSuccessPercentage);
-    
-    toast({
-      title: "Test Execution Complete",
-      description: `${finalResults.length} test case(s) executed. Success rate: ${newSuccessPercentage}%`,
-    });
+    try {
+      // Get Playwright code from test cases or use default
+      const playwrightCode = testsToRun[0]?.playwrightCode || '';
+      const specFiles = testsToRun.map(tc => tc.name);
+
+      // Call Supabase Edge Function for real Playwright execution
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/run-playwright`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          specFiles,
+          playwrightCode
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to execute tests');
+      }
+
+      // Use real Playwright results
+      const finalResults = result.results || [];
+      
+      setTestResults(finalResults);
+      setIsRunning(false);
+      
+      // Calculate success percentage
+      const passedCount = finalResults.filter(r => r.status === "passed").length;
+      const newSuccessPercentage = finalResults.length > 0 ? Math.round((passedCount / finalResults.length) * 100) : 0;
+      
+      onExecutionResults?.(finalResults, newSuccessPercentage);
+      
+      toast({
+        title: "Test Execution Complete",
+        description: `${finalResults.length} test case(s) executed with Playwright. Success rate: ${newSuccessPercentage}%`,
+      });
+
+    } catch (error) {
+      console.error('Error running Playwright tests:', error);
+      
+      // Fallback to mock results on error
+      const fallbackResults = testsToRun.map(testCase => ({
+        id: testCase.id,
+        name: testCase.name,
+        status: "failed" as const,
+        duration: "0s",
+        details: "Test execution failed",
+        error: error.message || "Failed to execute test"
+      }));
+      
+      setTestResults(fallbackResults);
+      setIsRunning(false);
+      
+      onExecutionResults?.(fallbackResults, 0);
+      
+      toast({
+        title: "Execution Failed",
+        description: "Failed to run tests with Playwright. Check console for details.",
+        variant: "destructive",
+      });
+    }
   };
 
   const stopTests = () => {
