@@ -17,8 +17,6 @@ import Homepage from "@/components/Homepage";
 import Footer from "@/components/Footer";
 
 const Index = () => {
-  const [openaiKey, setOpenaiKey] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showHomepage, setShowHomepage] = useState(true);
   const [activeTab, setActiveTab] = useState("generator");
   const [generatedGherkin, setGeneratedGherkin] = useState("");
@@ -29,16 +27,6 @@ const Index = () => {
   const [isHeadlessMode, setIsHeadlessMode] = useState(true);
   const [runningTestCases, setRunningTestCases] = useState<string[]>([]);
   const { toast } = useToast();
-
-  const handleAuthentication = (key: string) => {
-    setOpenaiKey(key);
-    setIsAuthenticated(true);
-    setShowHomepage(false);
-    toast({
-      title: "Authentication Success",
-      description: "OpenAI API Key has been configured successfully.",
-    });
-  };
 
   const handleGetStarted = () => {
     setShowHomepage(false);
@@ -142,85 +130,12 @@ const Index = () => {
       return;
     }
 
-    // Check if we have valid Playwright code for execution
-    if (!playwrightCode || playwrightCode.trim() === "") {
-      toast({
-        title: "No Playwright Code",
-        description: "Please generate Playwright code first before running tests.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Create test results for selected tests
-    const testResults = selectedTests.map(testCase => ({
-      id: testCase.id,
-      name: testCase.name,
-      status: "running" as const,
-      duration: "0s",
-      details: "Test is running...",
-      type: testCase.type
-    }));
-
-    setExecutionResults(testResults);
-    setRunningTestCases(selectedTestIds);
-    
-    // Auto-navigate to Execute tab
+    // Redirect to execution tab and let ExecutionEngine handle the test running
     setActiveTab("execution");
     
     toast({
-      title: "Tests Running",
-      description: `${selectedTests.length} test case(s) are now executing automatically.`,
-    });
-
-    // Simulate automatic execution
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const detailedFailureReasons = [
-      "Assertion failed: Expected text 'Welcome' but found 'Hello'",
-      "Element with selector '[data-testid=\"login-button\"]' not found",
-      "Timeout: Element '[placeholder=\"Username\"]' was not visible after 30s",
-      "Expected URL to contain '/dashboard' but got '/login'",
-      "Assertion failed: Expected element to be visible but it was hidden",
-      "Network request failed: GET /api/users returned 404",
-      "Element '[data-test=\"submit\"]' is not clickable at this point",
-      "Expected 5 items but found 3 in the list"
-    ];
-
-    // Execute all tests in parallel instead of sequentially
-    const finalResults = await Promise.all(
-      selectedTests.map(async (testCase, index) => {
-        // Simulate execution time
-        await new Promise(resolve => setTimeout(resolve, 2000 + index * 100));
-        
-        const passed = Math.random() > 0.3;
-        const errorMessage = passed ? undefined : detailedFailureReasons[Math.floor(Math.random() * detailedFailureReasons.length)];
-        
-        return {
-          id: testCase.id,
-          name: testCase.name,
-          status: passed ? "passed" as const : "failed" as const,
-          duration: `${(Math.random() * 5 + 1).toFixed(1)}s`,
-          details: passed ? "Test passed successfully" : "Test failed - assertion error",
-          error: errorMessage,
-          type: testCase.type
-        };
-      })
-    );
-    
-    // Update results all at once
-    setExecutionResults(finalResults);
-    
-    // Calculate final success percentage
-    const passedCount = finalResults.filter(r => r.status === "passed").length;
-    const newSuccessPercentage = Math.round((passedCount / finalResults.length) * 100);
-    setSuccessPercentage(newSuccessPercentage);
-    
-    setRunningTestCases([]);
-    
-    toast({
-      title: "Execution Complete",
-      description: `${finalResults.length} test case(s) executed. Success rate: ${newSuccessPercentage}%`,
+      title: "Redirecting to Execute",
+      description: `Navigate to Execute tab to run ${selectedTests.length} selected test(s).`,
     });
   };
 
@@ -255,102 +170,86 @@ const Index = () => {
                 QAtalyst
               </h1>
             </div>
-            <div className="flex items-center space-x-2">
-              {isAuthenticated && (
-                <div className="flex items-center space-x-2 text-sm text-green-400">
-                  <div className="h-2 w-2 rounded-full bg-green-400"></div>
-                  <span>API Connected</span>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>
 
       <div className="container mx-auto px-6 py-8">
-        {!isAuthenticated ? (
-          <div className="flex items-center justify-center min-h-[60vh]">
-            <AuthenticationCard onAuthenticate={handleAuthentication} />
-          </div>
-        ) : (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5 bg-slate-800 border-slate-700">
-              <TabsTrigger value="generator" className="data-[state=active]:bg-blue-600">
-                <FileText className="h-4 w-4 mr-2" />
-                Generator
-              </TabsTrigger>
-              <TabsTrigger value="playwright" className="data-[state=active]:bg-blue-600">
-                <Play className="h-4 w-4 mr-2" />
-                Playwright
-              </TabsTrigger>
-              <TabsTrigger value="management" className="data-[state=active]:bg-blue-600">
-                <Settings className="h-4 w-4 mr-2" />
-                Test Cases
-              </TabsTrigger>
-              <TabsTrigger value="execution" className="data-[state=active]:bg-blue-600">
-                <Play className="h-4 w-4 mr-2" />
-                Execute
-              </TabsTrigger>
-              <TabsTrigger value="export" className="data-[state=active]:bg-blue-600">
-                <GitBranch className="h-4 w-4 mr-2" />
-                Export
-              </TabsTrigger>
-            </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5 bg-slate-800 border-slate-700">
+            <TabsTrigger value="generator" className="data-[state=active]:bg-blue-600">
+              <FileText className="h-4 w-4 mr-2" />
+              Generator
+            </TabsTrigger>
+            <TabsTrigger value="playwright" className="data-[state=active]:bg-blue-600">
+              <Play className="h-4 w-4 mr-2" />
+              Playwright
+            </TabsTrigger>
+            <TabsTrigger value="management" className="data-[state=active]:bg-blue-600">
+              <Settings className="h-4 w-4 mr-2" />
+              Test Cases
+            </TabsTrigger>
+            <TabsTrigger value="execution" className="data-[state=active]:bg-blue-600">
+              <Play className="h-4 w-4 mr-2" />
+              Execute
+            </TabsTrigger>
+            <TabsTrigger value="export" className="data-[state=active]:bg-blue-600">
+              <GitBranch className="h-4 w-4 mr-2" />
+              Export
+            </TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="generator">
-              <GherkinGenerator 
-                apiKey={openaiKey}
-                onGherkinGenerated={handleGherkinGenerated}
-                onNavigateToPlaywright={() => setActiveTab("playwright")}
-                generatedGherkin={generatedGherkin}
-                onGherkinChange={setGeneratedGherkin}
-              />
-            </TabsContent>
+          <TabsContent value="generator">
+            <GherkinGenerator 
+              onGherkinGenerated={handleGherkinGenerated}
+              onNavigateToPlaywright={() => setActiveTab("playwright")}
+              generatedGherkin={generatedGherkin}
+              onGherkinChange={setGeneratedGherkin}
+            />
+          </TabsContent>
 
-            <TabsContent value="playwright">
-              <PlaywrightGenerator 
-                apiKey={openaiKey}
-                initialGherkin={generatedGherkin}
-                onPlaywrightGenerated={handlePlaywrightGenerated}
-                onNavigateToExecution={() => setActiveTab("execution")}
-                onExecutionResults={handleExecutionResults}
-                playwrightCode={playwrightCode}
-                onPlaywrightCodeChange={setPlaywrightCode}
-              />
-            </TabsContent>
+          <TabsContent value="playwright">
+            <PlaywrightGenerator 
+              initialGherkin={generatedGherkin}
+              onPlaywrightGenerated={handlePlaywrightGenerated}
+              onNavigateToExecution={() => setActiveTab("execution")}
+              onExecutionResults={handleExecutionResults}
+              playwrightCode={playwrightCode}
+              onPlaywrightCodeChange={setPlaywrightCode}
+            />
+          </TabsContent>
 
-            <TabsContent value="management">
-              <TestCaseManager 
-                testCases={testCases} 
-                onTestCasesChange={setTestCases}
-                onNavigateToGenerator={handleNavigateToGenerator}
-                onRunSelectedTests={handleRunSelectedTests}
-              />
-            </TabsContent>
+          <TabsContent value="management">
+            <TestCaseManager 
+              testCases={testCases} 
+              onTestCasesChange={setTestCases}
+              onNavigateToGenerator={handleNavigateToGenerator}
+              onRunSelectedTests={handleRunSelectedTests}
+            />
+          </TabsContent>
 
-            <TabsContent value="execution">
-              <ExecutionEngine 
-                executionResults={executionResults}
-                successPercentage={successPercentage}
-                isHeadlessMode={isHeadlessMode}
-                onHeadlessModeChange={setIsHeadlessMode}
-                onExecutionResults={handleExecutionResultsUpdate}
-                testCases={testCases}
-                runningTestCases={runningTestCases}
-              />
-            </TabsContent>
+          <TabsContent value="execution">
+            <ExecutionEngine 
+              executionResults={executionResults}
+              successPercentage={successPercentage}
+              isHeadlessMode={isHeadlessMode}
+              onHeadlessModeChange={setIsHeadlessMode}
+              onExecutionResults={handleExecutionResultsUpdate}
+              testCases={testCases}
+              runningTestCases={runningTestCases}
+            />
+          </TabsContent>
 
-            <TabsContent value="export">
-              <ExportManager 
-                gherkinContent={generatedGherkin}
-                playwrightCode={playwrightCode}
-                testCases={testCases}
-                executionResults={executionResults}
-                successPercentage={successPercentage}
-              />
-            </TabsContent>
-          </Tabs>
-        )}
+          <TabsContent value="export">
+            <ExportManager 
+              gherkinContent={generatedGherkin}
+              playwrightCode={playwrightCode}
+              testCases={testCases}
+              executionResults={executionResults}
+              successPercentage={successPercentage}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
       <Footer />
     </div>

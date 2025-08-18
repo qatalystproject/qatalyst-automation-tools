@@ -7,7 +7,6 @@ import { Code, Play, Copy, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface PlaywrightGeneratorProps {
-  apiKey: string;
   initialGherkin?: string;
   onPlaywrightGenerated?: (code: string) => void;
   onNavigateToExecution?: () => void;
@@ -28,7 +27,6 @@ const PlaywrightGenerator = ({
   const [gherkinInput, setGherkinInput] = useState(initialGherkin);
   const [playwrightCode, setPlaywrightCode] = useState(initialPlaywrightCode);
   const [isConverting, setIsConverting] = useState(false);
-  const [isRunning, setIsRunning] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -70,73 +68,27 @@ const PlaywrightGenerator = ({
   };
 
   const generatePlaywrightCode = async (scenarioText: string, featureUrl: string) => {
-    console.log('🔑 API Key length:', apiKey ? apiKey.length : 0);
-    console.log('🌐 Making request to OpenAI API...');
-    
-    const prompt = `
-You are a QA automation engineer.
-
-Given this Gherkin scenario (with URL as comment above it):
-# URL: ${featureUrl}
-
-${scenarioText}
-
-Write a Playwright test in JavaScript.
-
-Requirements:
-- Use Playwright Test syntax (import { test, expect } from '@playwright/test')
-- Don't include comments or explanations.
-- Implement meaningful locators if you can infer them (e.g., placeholder, label, button name).
-- Keep it in a single test() block for this scenario.
-`;
-
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const response = await fetch('/api/generate-playwright', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.2,
+          scenario: scenarioText,
+          url: featureUrl
         }),
       });
 
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
-
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ API Error Response:', errorText);
-        
-        let errorMessage = 'Failed to generate Playwright code from OpenAI';
-        
-        if (response.status === 401) {
-          errorMessage = 'Invalid OpenAI API key. Please check your authentication.';
-        } else if (response.status === 429) {
-          errorMessage = 'OpenAI API rate limit exceeded. Please try again later.';
-        } else if (response.status === 403) {
-          errorMessage = 'OpenAI API access forbidden. Check your API key permissions.';
-        } else if (response.status >= 500) {
-          errorMessage = 'OpenAI API server error. Please try again later.';
-        }
-        
-        throw new Error(`${errorMessage} (Status: ${response.status})`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate Playwright code');
       }
 
       const data = await response.json();
-      console.log('✅ API Response received successfully');
-      
-      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-        console.error('❌ Invalid API response structure:', data);
-        throw new Error('Invalid response structure from OpenAI API');
-      }
-      
-      return data.choices[0].message.content.trim();
+      return data.code;
     } catch (error) {
-      console.error('❌ Full error details:', error);
+      console.error('❌ Backend API Error:', error);
       throw error;
     }
   };
@@ -202,124 +154,13 @@ Requirements:
     } catch (error) {
       console.error('Error converting Gherkin to Playwright:', error);
       
-      if (error.message && error.message.includes('Invalid OpenAI API key')) {
-        toast({
-          title: "Invalid API Key",
-          description: "Your OpenAI API key is incorrect. Please check your key and try again.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Conversion Failed",
-          description: "Failed to convert Gherkin to Playwright code. Please try again.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Conversion Failed",
+        description: error.message || "Failed to convert Gherkin to Playwright code. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsConverting(false);
-    }
-  };
-
-  const runPlaywright = async () => {
-    if (!playwrightCode) {
-      toast({
-        title: "No Code to Run",
-        description: "Please generate Playwright code first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsRunning(true);
-    try {
-      console.log('🚀 Menjalankan tes dengan Playwright...\n');
-      
-      // Write playwright code to temporary files
-      const scenarios = parseScenarios(gherkinInput);
-      const outFiles = [];
-      
-      for (let i = 0; i < scenarios.length; i++) {
-        const title = scenarios[i].match(/Scenario:\s*(.*)/)?.[1]?.trim() || `scenario-${i + 1}`;
-        const fileName = `temp-${title.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}.spec.js`;
-        outFiles.push(fileName);
-      }
-      
-      // Simulate file creation and execution
-      const specPaths = outFiles.map(f => f.replace(/\\/g, '/'));
-      
-      // Simulate spawning playwright process
-      console.log(`Running: npx playwright test ${specPaths.join(' ')}`);
-      
-      // Simulate execution time
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Simulate test results based on actual playwright execution
-      const detailedFailureReasons = [
-        "Assertion failed: Expected text 'Welcome' but found 'Hello'",
-        "Element with selector '[data-testid=\"login-button\"]' not found",
-        "Timeout: Element '[placeholder=\"Username\"]' was not visible after 30s",
-        "Expected URL to contain '/dashboard' but got '/login'",
-        "Assertion failed: Expected element to be visible but it was hidden",
-        "Network request failed: GET /api/users returned 404",
-        "Element '[data-test=\"submit\"]' is not clickable at this point",
-        "Expected 5 items but found 3 in the list"
-      ];
-      
-      const mockResults = scenarios.map((scenario, index) => {
-        const title = scenario.match(/Scenario:\s*(.*)/)?.[1]?.trim() || `Scenario ${index + 1}`;
-        const passed = Math.random() > 0.3;
-        
-        return {
-          id: `playwright-${index + 1}`,
-          name: title,
-          status: passed ? "passed" : "failed",
-          duration: `${(Math.random() * 5 + 1).toFixed(1)}s`,
-          details: passed ? "All assertions passed successfully" : "Test assertion failed",
-          error: passed ? undefined : detailedFailureReasons[Math.floor(Math.random() * detailedFailureReasons.length)]
-        };
-      });
-
-      // Simulate exit code handling
-      const exitCode = mockResults.every(r => r.status === "passed") ? 0 : 1;
-      
-      if (exitCode === 0) {
-        console.log('✅ Tes berhasil dijalankan.');
-      } else {
-        console.error('❌ Tes gagal dijalankan.');
-      }
-
-      // Calculate success percentage
-      const passedCount = mockResults.filter(r => r.status === "passed").length;
-      const successPercentage = Math.round((passedCount / mockResults.length) * 100);
-
-      onExecutionResults?.(mockResults, successPercentage);
-      onNavigateToExecution?.();
-      
-      // Reset all fields after successful run
-      setGherkinInput("");
-      setPlaywrightCode("");
-      onPlaywrightGenerated?.("");
-      onPlaywrightCodeChange?.("");
-      
-      // Reset generated Gherkin via callback if available
-      if (window.resetGherkinFields) {
-        window.resetGherkinFields();
-      }
-      
-      const failedCount = mockResults.filter(r => r.status === "failed").length;
-      
-      toast({
-        title: "Tests Executed",
-        description: `Playwright tests completed. ${passedCount} passed, ${failedCount} failed (${successPercentage}% success). All fields have been reset.`,
-      });
-    } catch (error) {
-      toast({
-        title: "Execution Failed",
-        description: "Failed to run Playwright tests. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsRunning(false);
     }
   };
 
@@ -440,16 +281,6 @@ Feature: Login functionality
             placeholder="Generated Playwright automation code will appear here..."
             className="bg-slate-900 border-slate-600 text-blue-300 font-mono text-sm min-h-[320px] resize-none"
           />
-          {playwrightCode && (
-            <Button 
-              onClick={runPlaywright}
-              disabled={isRunning}
-              className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-            >
-              <Play className="h-4 w-4 mr-2" />
-              {isRunning ? "Running Playwright..." : "Run Playwright"}
-            </Button>
-          )}
         </CardContent>
       </Card>
     </div>
