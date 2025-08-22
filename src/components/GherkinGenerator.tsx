@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import Papa from 'papaparse';
 
 interface GherkinGeneratorProps {
+  apiKey: string;
   onGherkinGenerated?: (gherkin: string, title: string) => void;
   onNavigateToPlaywright?: () => void;
   generatedGherkin?: string;
@@ -50,25 +51,42 @@ const GherkinGenerator = ({
     return 'Generated Test Case';
   };
 
-  const generateGherkinFromBackend = async (url: string, scenarioDesc: string) => {
-    const response = await fetch('/api/generate-gherkin', {
+  const generateGherkinFromOpenAI = async (url: string, scenarioDesc: string) => {
+    const prompt = `
+Generate a Gherkin feature file content based on this info:
+URL: ${url}
+Scenario description: ${scenarioDesc}
+
+Requirements:
+- Include a Feature title.
+- Create multiple separate Scenarios (not one big Scenario) with clear titles.
+- Each Scenario must have Given, When, Then steps.
+- Use clear, human-readable Gherkin syntax.
+- Output ONLY the Gherkin content without any explanation or extra text.
+`;
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        url: url,
-        description: scenarioDesc,
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.3,
       }),
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to generate Gherkin');
+      if (response.status === 401) {
+        throw new Error('INVALID_API_KEY');
+      }
+      throw new Error('Failed to generate Gherkin from OpenAI');
     }
 
     const data = await response.json();
-    return data.gherkin;
+    return data.choices[0].message.content.trim();
   };
 
   const generateFromUrl = async () => {
@@ -92,7 +110,7 @@ const GherkinGenerator = ({
     
     setIsGenerating(true);
     try {
-      const gherkin = await generateGherkinFromBackend(url, scenarioDesc);
+      const gherkin = await generateGherkinFromOpenAI(url, scenarioDesc);
       const gherkinWithComment = `# URL: ${url}\n${gherkin}`;
       
       handleGherkinChange(gherkinWithComment);
@@ -106,10 +124,40 @@ const GherkinGenerator = ({
     } catch (error) {
       console.error('OpenAI API Error:', error);
       
+      if (error.message === 'INVALID_API_KEY') {
+        toast({
+          title: "Invalid API Key",
+          description: "Your OpenAI API key is incorrect. Please check your key and try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const mockGherkin = `# URL: ${url}
+Feature: ${scenarioDesc}
+  As a user
+  I want to test the functionality at ${url}
+  So that I can ensure it works correctly
+
+  Scenario: Page loads successfully
+    Given I navigate to "${url}"
+    When the page loads
+    Then I should see the main content
+    And the page should be responsive
+
+  Scenario: ${scenarioDesc}
+    Given I am on "${url}"
+    When I interact with the page elements
+    Then the expected functionality should work
+    And no errors should be displayed`;
+
+      handleGherkinChange(mockGherkin);
+      const title = extractScenarioTitle(mockGherkin);
+      onGherkinGenerated?.(mockGherkin, title);
+      
       toast({
-        title: "Generation Failed",
-        description: error.message || "Failed to generate Gherkin scenarios. Please try again.",
-        variant: "destructive",
+        title: "Gherkin Generated (Fallback)",
+        description: "Test scenarios generated using fallback method. Configure OpenAI API for better results.",
       });
     } finally {
       setIsGenerating(false);
