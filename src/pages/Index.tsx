@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, Play, Settings, FileText, Download, GitBranch } from "lucide-react";
+import { Upload, Play, Settings, FileText, Download, GitBranch, Globe } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AuthenticationCard from "@/components/AuthenticationCard";
 import GherkinGenerator from "@/components/GherkinGenerator";
@@ -13,6 +13,7 @@ import PlaywrightGenerator from "@/components/PlaywrightGenerator";
 import TestCaseManager from "@/components/TestCaseManager";
 import ExecutionEngine from "@/components/ExecutionEngine";
 import ExportManager from "@/components/ExportManager";
+import { WebScraper } from "@/components/WebScraper";
 import Homepage from "@/components/Homepage";
 import Footer from "@/components/Footer";
 
@@ -274,7 +275,11 @@ const Index = () => {
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5 bg-slate-800 border-slate-700">
+            <TabsList className="grid w-full grid-cols-6 bg-slate-800 border-slate-700">
+              <TabsTrigger value="scraper" className="data-[state=active]:bg-blue-600">
+                <Globe className="h-4 w-4 mr-2" />
+                Scraper
+              </TabsTrigger>
               <TabsTrigger value="generator" className="data-[state=active]:bg-blue-600">
                 <FileText className="h-4 w-4 mr-2" />
                 Generator
@@ -296,6 +301,10 @@ const Index = () => {
                 Export
               </TabsTrigger>
             </TabsList>
+
+            <TabsContent value="scraper">
+              <WebScraper />
+            </TabsContent>
 
             <TabsContent value="generator">
               <GherkinGenerator 
