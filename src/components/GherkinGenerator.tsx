@@ -53,16 +53,22 @@ const GherkinGenerator = ({
 
   const generateGherkinFromOpenAI = async (url: string, scenarioDesc: string) => {
     const prompt = `
-Generate a Gherkin feature file content based on this info:
+You are a QA engineer generating test scenarios.
+
+Generate a Gherkin feature file based on this info:
 URL: ${url}
 Scenario description: ${scenarioDesc}
 
 Requirements:
-- Include a Feature title.
-- Create multiple separate Scenarios (not one big Scenario) with clear titles.
+- Include a clear and concise Feature title.
+- Break down the description into multiple independent Scenarios (not too big).
+- Each Scenario must follow the real user flow logically from start to finish.
 - Each Scenario must have Given, When, Then steps.
-- Use clear, human-readable Gherkin syntax.
-- Output ONLY the Gherkin content without any explanation or extra text.
+- Use meaningful step details (e.g., "Given the user navigates to the login page", 
+  "When the user fills 'username' with 'validUser'").
+- Be specific with actions and expected results, not generic.
+- Use actual UI references if possible (buttons, fields, labels).
+- Output ONLY the Gherkin content without explanation.
 `;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
