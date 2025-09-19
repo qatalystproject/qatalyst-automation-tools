@@ -74,7 +74,7 @@ const PlaywrightGenerator = ({
     console.log('🌐 Making request to OpenAI API...');
     
     const prompt = `
-You are a QA automation engineer.
+You are a senior QA automation engineer.
 
 Given this Gherkin scenario (with URL as comment above it):
 # URL: ${featureUrl}
@@ -84,10 +84,18 @@ ${scenarioText}
 Write a Playwright test in JavaScript.
 
 Requirements:
-- Use Playwright Test syntax (import { test, expect } from '@playwright/test')
-- Don't include comments or explanations.
-- Implement meaningful locators if you can infer them (e.g., placeholder, label, button name).
-- Keep it in a single test() block for this scenario.
+- Use Playwright Test syntax (import { test, expect } from '@playwright/test').
+- Write only the code, no comments or explanations.
+- Use robust and meaningful locators:
+  - Prefer getByRole, getByLabel, getByPlaceholder, getByText before CSS/XPath.
+  - Use data-testid if obviously available.
+  - Avoid brittle selectors like nth-child or long CSS paths.
+- Add proper waiting strategies:
+  - Use await expect(locator).toBeVisible() before interacting when necessary.
+  - Wait for navigation when a new page is expected.
+- Keep the whole scenario in a single test() block.
+- Match the business flow described in the Gherkin steps as closely as possible.
+- If a step cannot be implemented exactly (e.g. unclear locator), create the most reasonable assumption based on the step wording.
 `;
 
     try {
