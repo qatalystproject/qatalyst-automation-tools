@@ -86,16 +86,22 @@ Write a Playwright test in JavaScript.
 Requirements:
 - Use Playwright Test syntax (import { test, expect } from '@playwright/test').
 - Write only the code, no comments or explanations.
-- Use robust and meaningful locators:
-  - Prefer getByRole, getByLabel, getByPlaceholder, getByText before CSS/XPath.
-  - Use data-testid if obviously available.
-  - Avoid brittle selectors like nth-child or long CSS paths.
-- Add proper waiting strategies:
-  - Use await expect(locator).toBeVisible() before interacting when necessary.
-  - Wait for navigation when a new page is expected.
-- Keep the whole scenario in a single test() block.
-- Match the business flow described in the Gherkin steps as closely as possible.
-- If a step cannot be implemented exactly (e.g. unclear locator), create the most reasonable assumption based on the step wording.
+- Locators:
+  - Prefer getByRole, getByLabel, getByPlaceholder, getByText (in that order).
+  - Use regex or partial text match when exact text may vary (e.g. error messages, toast, success messages).
+  - Avoid brittle locators like nth-child, long CSS, or absolute XPath.
+- Stability:
+  - Rely on Playwright's auto-waiting; do not use page.waitForNavigation().
+  - Before interacting, ensure elements are visible using await expect(locator).toBeVisible().
+- Assertions:
+  - Use toHaveURL for page navigation.
+  - Use toContainText or regex-based assertions for dynamic texts.
+- Flow:
+  - Follow the Gherkin steps precisely.
+  - If a step is unclear, infer the most likely user action.
+- Output:
+  - Each scenario must be wrapped in a single test() block.
+  - The test name should match the Gherkin scenario title.
 `;
 
     try {
