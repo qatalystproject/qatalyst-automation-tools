@@ -274,7 +274,7 @@ const Index = () => {
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5 bg-slate-800 border-slate-700">
+            <TabsList className="grid w-full grid-cols-3 bg-slate-800 border-slate-700">
               <TabsTrigger value="generator" className="data-[state=active]:bg-blue-600">
                 <FileText className="h-4 w-4 mr-2" />
                 Generator
@@ -286,14 +286,6 @@ const Index = () => {
               <TabsTrigger value="management" className="data-[state=active]:bg-blue-600">
                 <Settings className="h-4 w-4 mr-2" />
                 Test Cases
-              </TabsTrigger>
-              <TabsTrigger value="execution" className="data-[state=active]:bg-blue-600">
-                <Play className="h-4 w-4 mr-2" />
-                Execute
-              </TabsTrigger>
-              <TabsTrigger value="export" className="data-[state=active]:bg-blue-600">
-                <GitBranch className="h-4 w-4 mr-2" />
-                Export
               </TabsTrigger>
             </TabsList>
 
@@ -325,28 +317,6 @@ const Index = () => {
                 onTestCasesChange={setTestCases}
                 onNavigateToGenerator={handleNavigateToGenerator}
                 onRunSelectedTests={handleRunSelectedTests}
-              />
-            </TabsContent>
-
-            <TabsContent value="execution">
-              <ExecutionEngine 
-                executionResults={executionResults}
-                successPercentage={successPercentage}
-                isHeadlessMode={isHeadlessMode}
-                onHeadlessModeChange={setIsHeadlessMode}
-                onExecutionResults={handleExecutionResultsUpdate}
-                testCases={testCases}
-                runningTestCases={runningTestCases}
-              />
-            </TabsContent>
-
-            <TabsContent value="export">
-              <ExportManager 
-                gherkinContent={generatedGherkin}
-                playwrightCode={playwrightCode}
-                testCases={testCases}
-                executionResults={executionResults}
-                successPercentage={successPercentage}
               />
             </TabsContent>
           </Tabs>
